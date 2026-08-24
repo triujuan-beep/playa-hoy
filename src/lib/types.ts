@@ -1,0 +1,12 @@
+export type Occupancy = "low" | "medium" | "high";
+export type SanitaryStatus = "safe" | "warning" | "closed" | "unknown";
+export type DataMode = "mock" | "real" | "mixed";
+export type DataOrigin = "observed" | "forecast" | "unknown";
+export type DataSourceState = "live" | "manual" | "mock" | "coming-soon" | "unavailable";
+export type DataSourceKey = "weather" | "sea" | "sanitary" | "jellyfish" | "occupancy";
+export type MetricKey = "waterTemperature" | "airTemperature" | "windSpeed" | "windGust" | "rainProbability" | "waveHeight" | "waveDirection" | "wavePeriod" | "swellWaveHeight" | "swellWaveDirection" | "swellWavePeriod" | "oceanCurrentVelocity" | "oceanCurrentDirection" | "sanitaryStatus" | "jellyfishRisk" | "occupancy";
+export type MetricMetadata = { origin:DataOrigin; source?:string; sourceUrl?:string; updatedAt?:string; validFor?:string; };
+export type DataSourceInfo = { state:DataSourceState; origin:DataOrigin; label:string; source?:string; sourceUrl?:string; updatedAt?:string; validFor?:string; message?:string; stationName?:string; stationDistanceKm?:number; };
+export type Beach = { id:string; slug:string; name:string; municipality:string; latitude:number; longitude:number; waterTemperature?:number; airTemperature?:number; windSpeed?:number; windGust?:number; windDirection?:number; waveHeight?:number; waveDirection?:number; wavePeriod?:number; swellWaveHeight?:number; swellWaveDirection?:number; swellWavePeriod?:number; oceanCurrentVelocity?:number; oceanCurrentDirection?:number; jellyfishRisk?:number; occupancy?:Occupancy; sanitaryStatus:SanitaryStatus; sanitaryMessage?:string; rainProbability?:number; sanitaryEffectiveFrom?:string; sanitaryEffectiveUntil?:string; dataMode?:DataMode; dataCompleteness?:number; metricMetadata?:Partial<Record<MetricKey,MetricMetadata>>; sources?:Partial<Record<DataSourceKey,DataSourceInfo>>; updatedAt?:string; };
+export type Priority = "warmWater" | "lowWind" | "calmSea" | "lowJellyfish" | "lowOccupancy";
+export type SortOption = "score" | "warmest" | "wind" | "waves" | "distance";
