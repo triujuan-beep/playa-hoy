@@ -1,7 +1,8 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 
-export type WeatherResult={airTemperature?:number;windSpeed?:number;windGust?:number;windDirection?:number;rainProbability?:number;updatedAt?:string;validFor?:string;source:string;sourceUrl:string};
+export type WeatherHour={time:string;airTemperature?:number;windSpeed?:number;windGust?:number;windDirection?:number;rainProbability?:number};
+export type WeatherResult={airTemperature?:number;windSpeed?:number;windGust?:number;windDirection?:number;rainProbability?:number;hourly:WeatherHour[];updatedAt?:string;validFor?:string;source:string;sourceUrl:string};
 
 export const AEMET_MUNICIPALITY_CODES:Record<string,string>={Torrox:"29091",Nerja:"29075","Rincón de la Victoria":"29082",Málaga:"29067",Torremolinos:"29901",Mijas:"29070","La Cala de Mijas":"29070"};
 const API_BASE="https://opendata.aemet.es/opendata/api";
@@ -57,18 +58,17 @@ async function loadWeather(municipality:string,code:string):Promise<WeatherResul
  const dataResponse=await fetchWithRetry(metadata.datos);
  if(!dataResponse.ok)throw new Error(`fase datos · HTTP ${dataResponse.status}`);
  const payload=await dataResponse.json() as AemetPayload[];
- const root=payload[0];const days=root?.prediccion?.dia??[];const local=localDateAndHour();const target=localDateAndHour(new Date(Date.now()+(local.minute>=30?3600000:0)));const day=days.find(item=>item.fecha?.slice(0,10)===target.date)??days[0];
- if(!day)throw new Error("fase parser · predicción sin días");
- const forecastHour=target.hour;
- const temperature=closestInstant(day.temperatura,forecastHour);const rain=closestProbability(day.probPrecipitacion,forecastHour);
- const windItems=day.vientoAndRachaMax;const wind=closestInstant(windItems?.filter(item=>item.velocidad!==undefined),forecastHour);const gust=closestInstant(windItems?.filter(item=>item.value!==undefined),forecastHour);
- const result:WeatherResult={airTemperature:asNumber(temperature?.value),windSpeed:asNumber(wind?.velocidad),windGust:asNumber(gust?.value),windDirection:compassDegrees(wind?.direccion),rainProbability:asNumber(rain?.value),updatedAt:root?.elaborado??root?.origen?.elaborado,validFor:day.fecha?`${day.fecha.slice(0,10)}T${String(periodStart(temperature?.periodo)??forecastHour).padStart(2,"0")}:00`:undefined,source:"AEMET OpenData",sourceUrl:SOURCE_URL};
+ const root=payload[0];const days=root?.prediccion?.dia??[];const local=localDateAndHour();const target=localDateAndHour(new Date(Date.now()+(local.minute>=30?3600000:0)));
+ if(!days.length)throw new Error("fase parser · predicción sin días");
+ const hourly=days.flatMap(day=>{const date=day.fecha?.slice(0,10);if(!date)return[];return Array.from({length:24},(_,hour)=>{const temperature=closestInstant(day.temperatura,hour);const rain=closestProbability(day.probPrecipitacion,hour);const windItems=day.vientoAndRachaMax;const wind=closestInstant(windItems?.filter(item=>item.velocidad!==undefined),hour);const gust=closestInstant(windItems?.filter(item=>item.value!==undefined),hour);return{time:`${date}T${String(hour).padStart(2,"0")}:00`,airTemperature:asNumber(temperature?.value),windSpeed:asNumber(wind?.velocidad),windGust:asNumber(gust?.value),windDirection:compassDegrees(wind?.direccion),rainProbability:asNumber(rain?.value)}})}).filter(point=>[point.airTemperature,point.windSpeed,point.windGust,point.windDirection,point.rainProbability].some(value=>value!==undefined));
+ const targetTime=`${target.date}T${String(target.hour).padStart(2,"0")}:00`;const current=hourly.reduce<WeatherHour|undefined>((best,item)=>!best||Math.abs(Date.parse(`${item.time}:00Z`)-Date.parse(`${targetTime}:00Z`))<Math.abs(Date.parse(`${best.time}:00Z`)-Date.parse(`${targetTime}:00Z`))?item:best,undefined);
+ const result:WeatherResult={airTemperature:current?.airTemperature,windSpeed:current?.windSpeed,windGust:current?.windGust,windDirection:current?.windDirection,rainProbability:current?.rainProbability,hourly,updatedAt:root?.elaborado??root?.origen?.elaborado,validFor:current?.time,source:"AEMET OpenData",sourceUrl:SOURCE_URL};
  if([result.airTemperature,result.windSpeed,result.windGust,result.windDirection,result.rainProbability].every(value=>value===undefined))throw new Error("fase parser · sin métricas utilizables");
  console.info(`[AEMET] ${municipality}: OK`);
  return result;
 }
 
-const getCachedWeather=unstable_cache(loadWeather,["aemet-municipal-hourly-v3"],{revalidate:CACHE_SECONDS,tags:["aemet-weather"]});
+const getCachedWeather=unstable_cache(loadWeather,["aemet-municipal-hourly-v4"],{revalidate:CACHE_SECONDS,tags:["aemet-weather"]});
 const inFlight=new Map<string,Promise<WeatherResult|null>>();
 let requestQueue:Promise<unknown>=Promise.resolve();
 

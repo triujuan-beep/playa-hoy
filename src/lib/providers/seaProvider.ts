@@ -13,11 +13,12 @@ const HOURLY_VARIABLES=[
 ] as const;
 
 export type MarineBeach={id:string;latitude:number;longitude:number};
+export type SeaHour={time:string;waterTemperature?:number;waveHeight?:number;waveDirection?:number;wavePeriod?:number;swellWaveHeight?:number;swellWaveDirection?:number;swellWavePeriod?:number;oceanCurrentVelocity?:number;oceanCurrentDirection?:number};
 export type SeaResult={
  waterTemperature?:number;waveHeight?:number;waveDirection?:number;wavePeriod?:number;
  swellWaveHeight?:number;swellWaveDirection?:number;swellWavePeriod?:number;
  oceanCurrentVelocity?:number;oceanCurrentDirection?:number;
- validFor?:string;source:string;sourceUrl:string;
+ hourly:SeaHour[];validFor?:string;source:string;sourceUrl:string;
 };
 type Hourly={time?:string[];sea_surface_temperature?:Array<number|null>;wave_height?:Array<number|null>;wave_direction?:Array<number|null>;wave_period?:Array<number|null>;swell_wave_height?:Array<number|null>;swell_wave_direction?:Array<number|null>;swell_wave_period?:Array<number|null>;ocean_current_velocity?:Array<number|null>;ocean_current_direction?:Array<number|null>};
 type MarineResponse={location_id?:number;hourly?:Hourly};
@@ -39,11 +40,12 @@ const valueAt=(values:Array<number|null>|undefined,index:number)=>{const value=v
 function normalize(response:MarineResponse):SeaResult|null{
  const hourly=response.hourly;const times=hourly?.time??[];const index=getClosestHourlyIndex(times);
  if(!hourly||index<0)return null;
+ const series=times.map((time,itemIndex)=>({time,waterTemperature:valueAt(hourly.sea_surface_temperature,itemIndex),waveHeight:valueAt(hourly.wave_height,itemIndex),waveDirection:valueAt(hourly.wave_direction,itemIndex),wavePeriod:valueAt(hourly.wave_period,itemIndex),swellWaveHeight:valueAt(hourly.swell_wave_height,itemIndex),swellWaveDirection:valueAt(hourly.swell_wave_direction,itemIndex),swellWavePeriod:valueAt(hourly.swell_wave_period,itemIndex),oceanCurrentVelocity:valueAt(hourly.ocean_current_velocity,itemIndex),oceanCurrentDirection:valueAt(hourly.ocean_current_direction,itemIndex)}));
  const result:SeaResult={
   waterTemperature:valueAt(hourly.sea_surface_temperature,index),waveHeight:valueAt(hourly.wave_height,index),waveDirection:valueAt(hourly.wave_direction,index),wavePeriod:valueAt(hourly.wave_period,index),
   swellWaveHeight:valueAt(hourly.swell_wave_height,index),swellWaveDirection:valueAt(hourly.swell_wave_direction,index),swellWavePeriod:valueAt(hourly.swell_wave_period,index),
   oceanCurrentVelocity:valueAt(hourly.ocean_current_velocity,index),oceanCurrentDirection:valueAt(hourly.ocean_current_direction,index),
-  validFor:times[index],source:"Open-Meteo Marine · DWD",sourceUrl:OPEN_METEO_MARINE_DOCS,
+  hourly:series,validFor:times[index],source:"Open-Meteo Marine · DWD",sourceUrl:OPEN_METEO_MARINE_DOCS,
  };
  return result.waterTemperature!==undefined||result.waveHeight!==undefined?result:null;
 }

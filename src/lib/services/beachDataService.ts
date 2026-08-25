@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { beaches as catalog } from "../mock-beaches";
 import { calculateDataCompleteness } from "../scoring";
-import type { Beach,DataSourceInfo,MetricMetadata } from "../types";
+import type { Beach,BeachHourlyConditions,DataSourceInfo,MetricMetadata } from "../types";
 import { getWeather } from "../providers/weatherProvider";
 import { getMarineForecastForBeaches,OPEN_METEO_MARINE_DOCS } from "../providers/seaProvider";
 import { getAllSanitaryStatuses } from "../providers/sanitaryProvider";
@@ -22,6 +22,8 @@ async function loadRealData():Promise<Beach[]> {
  const weatherByMunicipality=new Map(weatherEntries);
  return catalog.map(base=>{
   const weather=weatherByMunicipality.get(weatherArea(base.municipality));const sea=marineByBeach[base.id];const health=sanitary[base.id];
+  const weatherHours=new Map(weather?.hourly.map(item=>[item.time.slice(0,16),item])??[]);const seaHours=new Map(sea?.hourly.map(item=>[item.time.slice(0,16),item])??[]);const times=[...new Set([...weatherHours.keys(),...seaHours.keys()])].sort();
+  const hourlyConditions:BeachHourlyConditions[]=times.map(time=>{const weatherHour=weatherHours.get(time);const seaHour=seaHours.get(time);return{time,airTemperature:weatherHour?.airTemperature,windSpeed:weatherHour?.windSpeed,windGust:weatherHour?.windGust,windDirection:weatherHour?.windDirection,rainProbability:weatherHour?.rainProbability,waterTemperature:seaHour?.waterTemperature,waveHeight:seaHour?.waveHeight,waveDirection:seaHour?.waveDirection,wavePeriod:seaHour?.wavePeriod,swellWaveHeight:seaHour?.swellWaveHeight,swellWaveDirection:seaHour?.swellWaveDirection,swellWavePeriod:seaHour?.swellWavePeriod,oceanCurrentVelocity:seaHour?.oceanCurrentVelocity,oceanCurrentDirection:seaHour?.oceanCurrentDirection}});
   const weatherMeta:MetricMetadata={origin:weather?"forecast":"unknown",source:"AEMET OpenData",sourceUrl:"https://opendata.aemet.es/dist/index.html",updatedAt:weather?.updatedAt,validFor:weather?.validFor};
   const seaMeta:MetricMetadata={origin:sea?"forecast":"unknown",source:"Open-Meteo Marine",sourceUrl:OPEN_METEO_MARINE_DOCS,validFor:sea?.validFor};
   const sanitaryMeta:MetricMetadata={origin:health.status==="unknown"?"unknown":"observed",source:health.source,sourceUrl:health.sourceUrl,updatedAt:health.updatedAt,validFor:health.effectiveUntil};
@@ -29,7 +31,7 @@ async function loadRealData():Promise<Beach[]> {
   const beach:Beach={id:base.id,slug:base.slug,name:base.name,municipality:base.municipality,latitude:base.latitude,longitude:base.longitude,
    airTemperature:weather?.airTemperature,windSpeed:weather?.windSpeed,windGust:weather?.windGust,windDirection:weather?.windDirection,rainProbability:weather?.rainProbability,
    waterTemperature:sea?.waterTemperature,waveHeight:sea?.waveHeight,waveDirection:sea?.waveDirection,wavePeriod:sea?.wavePeriod,swellWaveHeight:sea?.swellWaveHeight,swellWaveDirection:sea?.swellWaveDirection,swellWavePeriod:sea?.swellWavePeriod,oceanCurrentVelocity:sea?.oceanCurrentVelocity,oceanCurrentDirection:sea?.oceanCurrentDirection,
-   sanitaryStatus:health.status,sanitaryMessage:health.message,sanitaryEffectiveFrom:health.effectiveFrom,sanitaryEffectiveUntil:health.effectiveUntil,dataMode:"real",
+   sanitaryStatus:health.status,sanitaryMessage:health.message,sanitaryEffectiveFrom:health.effectiveFrom,sanitaryEffectiveUntil:health.effectiveUntil,dataMode:"real",hourlyConditions,
    metricMetadata:{waterTemperature:seaMeta,waveHeight:seaMeta,waveDirection:seaMeta,wavePeriod:seaMeta,swellWaveHeight:seaMeta,swellWaveDirection:seaMeta,swellWavePeriod:seaMeta,oceanCurrentVelocity:seaMeta,oceanCurrentDirection:seaMeta,airTemperature:weatherMeta,windSpeed:weatherMeta,windGust:weatherMeta,rainProbability:weatherMeta,sanitaryStatus:sanitaryMeta,jellyfishRisk:unknownMeta,occupancy:unknownMeta},
    sources:{
     weather:weather?{state:"live",origin:"forecast",label:"Meteorología",source:weather.source,sourceUrl:weather.sourceUrl,updatedAt:weather.updatedAt,validFor:weather.validFor}:{state:"unavailable",origin:"unknown",label:"Meteorología",source:"AEMET OpenData",sourceUrl:"https://opendata.aemet.es/dist/index.html",message:process.env.AEMET_API_KEY?"AEMET no respondió con datos utilizables.":"Falta configurar AEMET_API_KEY."},
