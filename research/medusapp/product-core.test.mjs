@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { aggregateMedusAppReports,parseMedusAppFeatureCollection,unknownMedusAppObservation } from "../../src/lib/providers/medusAppCore.ts";
 import { calculateBeachScore } from "../../src/lib/scoring.ts";
+import { compareJellyfishObservationPriority,prioritiesForScoring } from "../../src/lib/jellyfish-priority.ts";
 
 const now=new Date("2026-08-25T12:00:00.000Z");
 const popup=(id,species,extra="")=>`<div data-codigo="${id}"><div class="infoMedusa" data-idmedusa="7">${species}</div>${extra}</div>`;
@@ -30,4 +31,10 @@ test("distinguishes no reports, explicit absence, several sightings and source f
 test("MedusApp observations do not affect score or ranking inputs",()=>{
  const beach={id:"1",slug:"test",name:"Test",municipality:"Málaga",latitude:36.718,longitude:-4.404,sanitaryStatus:"safe",waterTemperature:24,windSpeed:8,windGust:12,waveHeight:.3,rainProbability:2};const observation=aggregateMedusAppReports([],{latitude:beach.latitude,longitude:beach.longitude},now);
  assert.equal(calculateBeachScore(beach),calculateBeachScore({...beach,jellyfishObservation:observation}));
+});
+
+test("the optional MedusApp priority reorders evidence without changing score",()=>{
+ const observation=status=>({status,origin:"observed",source:"MedusApp",sourceType:"crowdsourced",reportCount:0,noSightingReportCount:0,pendingReportCount:0,nearestDistanceKm:null,latestReportAt:null,abundance:null,radiusKm:5,windowHours:48,updatedAt:now.toISOString()});const ordered=["strong_recent_presence","multiple_recent_sightings","recent_sighting","unknown","no_recent_reports","recent_no_sightings"].map(status=>({jellyfishObservation:observation(status)})).toSorted(compareJellyfishObservationPriority);
+ assert.deepEqual(ordered.map(item=>item.jellyfishObservation.status),["recent_no_sightings","unknown","no_recent_reports","recent_sighting","multiple_recent_sightings","strong_recent_presence"]);
+ const beach={id:"1",slug:"test",name:"Test",municipality:"Málaga",latitude:36.718,longitude:-4.404,sanitaryStatus:"safe",waterTemperature:24,windSpeed:8,windGust:12,waveHeight:.3,rainProbability:2,jellyfishRisk:50};assert.equal(calculateBeachScore(beach,prioritiesForScoring(["lowJellyfish"])),calculateBeachScore(beach));
 });
