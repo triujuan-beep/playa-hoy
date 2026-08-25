@@ -29,7 +29,7 @@ SANITARY_DATA_URL=
 
 - `AEMET_API_KEY` (**obligatoria en producción**): clave privada de AEMET OpenData. Solo se lee en el servidor y nunca se envía al navegador.
 - `USE_MOCK_DATA=false` (**obligatoria en producción**): activa los providers reales. Usa `true` únicamente para desarrollo con datos de demostración.
-- `SANITARY_DATA_URL`: URL opcional de un JSON estructurado, mantenido a partir de fuentes oficiales. Si no existe un estado sanitario vigente, la playa queda como `unknown` y no se recomienda.
+- `SANITARY_DATA_URL`: URL opcional de un JSON estructurado, mantenido a partir de fuentes oficiales. Si no existe un estado sanitario vigente, la playa queda como `unknown`; esa ausencia no la excluye ni penaliza por sí sola.
 
 En Vercel, configura estas variables en **Project → Settings → Environment Variables**. `.env.local` y los secretos están ignorados por Git.
 

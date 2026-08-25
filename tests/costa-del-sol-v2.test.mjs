@@ -7,6 +7,7 @@ import {calculateBeachScore,calculateDataCompleteness,getBeachExclusion} from ".
 import {AEMET_MUNICIPALITY_CODES} from "../src/lib/aemet-config.ts";
 import {getGoogleMapsDirectionsUrl} from "../src/lib/maps.ts";
 import {getTodayTimeOptions,selectForecastDate} from "../src/lib/hourly-options.ts";
+import {degreesToCardinal,formatCardinalDegrees,formatDecimal} from "../src/lib/number-format.ts";
 
 const expectedMunicipalities=["Algarrobo","Benalmádena","Casares","Estepona","Fuengirola","Málaga","Manilva","Marbella","Mijas","Nerja","Rincón de la Victoria","Torremolinos","Torrox","Vélez-Málaga"];
 
@@ -31,3 +32,7 @@ test("una respuesta MedusApp sin reportes cuenta como dato disponible",()=>{cons
 test("Voy más tarde ofrece Ahora, +2, +4 y +6 sin nuevas fuentes",()=>{const hourlyConditions=Array.from({length:12},(_,index)=>({time:`2026-08-25T${String(index+9).padStart(2,"0")}:00`,windSpeed:8,waveHeight:.3}));const sample={...beaches[0],hourlyConditions};const options=getTodayTimeOptions([sample],new Date("2026-08-25T08:00:00Z"));assert.deepEqual(options.map(item=>item.label),["Ahora","+2 h","+4 h","+6 h"])});
 
 test("Evolución prioriza hoy aunque la serie empiece el día anterior",()=>{const times=["2026-08-24T23:00",...Array.from({length:15},(_,index)=>`2026-08-25T${String(index+8).padStart(2,"0")}:00`)];assert.equal(selectForecastDate(times,new Date("2026-08-25T10:00:00Z")),"2026-08-25")});
+
+test("la dirección marina cubre los ocho cardinales y el wrap de Norte",()=>{const examples=[[0,"N"],[45,"NE"],[90,"E"],[135,"SE"],[180,"S"],[225,"SO"],[270,"O"],[315,"NO"],[359,"N"]];for(const[degrees,expected]of examples)assert.equal(degreesToCardinal(degrees),expected);assert.equal(degreesToCardinal(22),"N");assert.equal(degreesToCardinal(23),"NE");assert.equal(degreesToCardinal(337),"NO");assert.equal(degreesToCardinal(338),"N")});
+
+test("el detalle marino conserva grados y usa decimal español",()=>{assert.equal(formatCardinalDegrees(203),"SO (203°)");assert.equal(formatDecimal(3.3,1),"3,3");assert.equal(formatDecimal(.1,1),"0,1");assert.equal(formatDecimal(1.3,1),"1,3")});
