@@ -5,4 +5,4 @@ const compact:Record<JellyfishObservationStatus,string>={no_recent_reports:"Sin 
 export const jellyfishObservationLabel=(status:JellyfishObservationStatus)=>labels[status];
 export const jellyfishObservationCompact=(status:JellyfishObservationStatus)=>compact[status];
 export const jellyfishObservationTone=(status:JellyfishObservationStatus)=>status==="strong_recent_presence"||status==="multiple_recent_sightings"?"attention":status==="recent_sighting"?"warning":"neutral";
-export function jellyfishObservationAge(observation:JellyfishObservation){if(!observation.latestReportAt)return null;const hours=Math.max(0,Math.round((Date.now()-new Date(observation.latestReportAt).getTime())/3_600_000));return hours<1?"Hace menos de 1 h":`Hace ${hours} h`}
+export function jellyfishObservationAge(observation:JellyfishObservation,referenceTime:string){if(!observation.latestReportAt)return null;const hours=Math.max(0,Math.round((Date.parse(referenceTime)-new Date(observation.latestReportAt).getTime())/3_600_000));return hours<1?"Hace menos de 1 h":`Hace ${hours} h`}

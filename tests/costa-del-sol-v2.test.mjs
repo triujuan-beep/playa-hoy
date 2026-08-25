@@ -8,6 +8,8 @@ import {AEMET_MUNICIPALITY_CODES} from "../src/lib/aemet-config.ts";
 import {getGoogleMapsDirectionsUrl} from "../src/lib/maps.ts";
 import {getTodayTimeOptions,selectForecastDate} from "../src/lib/hourly-options.ts";
 import {degreesToCardinal,formatCardinalDegrees,formatDecimal} from "../src/lib/number-format.ts";
+import {jellyfishObservationAge} from "../src/lib/jellyfish-display.ts";
+import {formatDataAge} from "../src/lib/time.ts";
 
 const expectedMunicipalities=["Algarrobo","Benalmádena","Casares","Estepona","Fuengirola","Málaga","Manilva","Marbella","Mijas","Nerja","Rincón de la Victoria","Torremolinos","Torrox","Vélez-Málaga"];
 
@@ -30,6 +32,10 @@ test("unknown sanitario sigue siendo elegible y no altera el score",()=>{const b
 test("una respuesta MedusApp sin reportes cuenta como dato disponible",()=>{const base=beaches[0];const without=calculateDataCompleteness({...base,jellyfishRisk:undefined,jellyfishObservation:undefined});const withObservation=calculateDataCompleteness({...base,jellyfishRisk:undefined,jellyfishObservation:{status:"no_recent_reports",origin:"observed",source:"MedusApp",sourceType:"crowdsourced",reportCount:0,noSightingReportCount:0,pendingReportCount:0,nearestDistanceKm:null,latestReportAt:null,abundance:null,radiusKm:5,windowHours:48,updatedAt:"2026-08-25T10:00:00+02:00"}});assert.equal(withObservation-without,17)});
 
 test("Voy más tarde ofrece Ahora, +2, +4 y +6 sin nuevas fuentes",()=>{const hourlyConditions=Array.from({length:12},(_,index)=>({time:`2026-08-25T${String(index+9).padStart(2,"0")}:00`,windSpeed:8,waveHeight:.3}));const sample={...beaches[0],hourlyConditions};const options=getTodayTimeOptions([sample],new Date("2026-08-25T08:00:00Z"));assert.deepEqual(options.map(item=>item.label),["Ahora","+2 h","+4 h","+6 h"])});
+
+test("una única referencia temporal estabiliza Voy más tarde al cruzar de hora",()=>{const hourlyConditions=Array.from({length:12},(_,index)=>({time:`2026-08-25T${String(index+9).padStart(2,"0")}:00`,waterTemperature:24,windSpeed:8,waveHeight:.3,rainProbability:0}));const sample={...beaches[0],hourlyConditions};const before=new Date("2026-08-25T14:59:59Z");const after=new Date("2026-08-25T15:00:00Z");const beforeLabels=getTodayTimeOptions([sample],before).map(item=>item.label);assert.deepEqual(beforeLabels,["Ahora","+2 h","+4 h"]);assert.deepEqual(getTodayTimeOptions([sample],new Date(before.toISOString())).map(item=>item.label),beforeLabels);assert.deepEqual(getTodayTimeOptions([sample],after).map(item=>item.label),["Ahora","+2 h"])});
+
+test("los textos relativos usan la misma referencia serializada",()=>{const referenceTime="2026-08-25T17:00:00.000Z";assert.equal(formatDataAge("2026-08-25T15:00:00.000Z",referenceTime),"actualizado hace 2 h");const observation={status:"recent_sighting",origin:"observed",source:"MedusApp",sourceType:"crowdsourced",reportCount:1,noSightingReportCount:0,pendingReportCount:0,nearestDistanceKm:1,latestReportAt:"2026-08-25T15:00:00.000Z",abundance:null,radiusKm:5,windowHours:48,updatedAt:referenceTime};assert.equal(jellyfishObservationAge(observation,referenceTime),"Hace 2 h")});
 
 test("Evolución prioriza hoy aunque la serie empiece el día anterior",()=>{const times=["2026-08-24T23:00",...Array.from({length:15},(_,index)=>`2026-08-25T${String(index+8).padStart(2,"0")}:00`)];assert.equal(selectForecastDate(times,new Date("2026-08-25T10:00:00Z")),"2026-08-25")});
 

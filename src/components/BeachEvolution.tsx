@@ -13,9 +13,10 @@ const trendMetrics:{metric:TrendMetric;label:string;unit:string;digits:number}[]
 ];
 const trendView:Record<TrendDirection,{arrow:string;label:string;style:string}>={improving:{arrow:"↑",label:"Condiciones mejorando",style:"text-emerald-700"},worsening:{arrow:"↓",label:"Condiciones empeorando",style:"text-red-600"},stable:{arrow:"→",label:"Condiciones similares",style:"text-slate-500"},unavailable:{arrow:"—",label:"Sin comparación",style:"text-slate-400"}};
 
-export function BeachEvolution({beach}:{beach:Beach}){
- const points=useMemo(()=>getEvolution(beach),[beach]);
- const bestWindow=useMemo(()=>getBestTimeWindow(beach),[beach]);
+export function BeachEvolution({beach,referenceTime}:{beach:Beach;referenceTime:string}){
+ const referenceDate=useMemo(()=>new Date(referenceTime),[referenceTime]);
+ const points=useMemo(()=>getEvolution(beach,referenceDate),[beach,referenceDate]);
+ const bestWindow=useMemo(()=>getBestTimeWindow(beach,referenceDate),[beach,referenceDate]);
  const [selectedTime,setSelectedTime]=useState<string>();
  if(points.length<2)return null;
  const selected=points.find(point=>point.time===selectedTime)??points[0];
