@@ -1,0 +1,5 @@
+export function splitIntoBatches<T>(items:T[],batchSize:number){if(!Number.isInteger(batchSize)||batchSize<1)throw new RangeError("batchSize debe ser un entero positivo");const batches:T[][]=[];for(let start=0;start<items.length;start+=batchSize)batches.push(items.slice(start,start+batchSize));return batches}
+
+export async function runIndependentBatches<T,R>(batches:T[][],task:(batch:T[],index:number)=>Promise<R>,onError?:(error:unknown,index:number)=>void){const results:Array<R|undefined>=Array(batches.length).fill(undefined);for(const[batchIndex,batch]of batches.entries())try{results[batchIndex]=await task(batch,batchIndex)}catch(error){onError?.(error,batchIndex)}return results}
+
+export function retryAfterMilliseconds(value:string|null,attempt:number,now=Date.now()){if(value){const seconds=Number(value);if(Number.isFinite(seconds)&&seconds>=0)return Math.min(seconds*1000,10_000);const date=Date.parse(value);if(Number.isFinite(date))return Math.min(Math.max(0,date-now),10_000)}return Math.min(1000*2**attempt,10_000)}

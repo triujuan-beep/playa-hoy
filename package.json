@@ -8,10 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:medusapp": "node --experimental-strip-types --test --test-isolation=none research/medusapp/product-core.test.mjs"
+    "test": "pnpm test:medusapp && pnpm test:v2",
+    "test:medusapp": "node --experimental-strip-types --test --test-isolation=none research/medusapp/product-core.test.mjs",
+    "test:v2": "node --experimental-strip-types --test --test-isolation=none tests/costa-del-sol-v2.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
+    "@vercel/functions": "^3.9.5",
     "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8"

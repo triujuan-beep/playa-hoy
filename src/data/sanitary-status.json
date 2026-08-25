@@ -1,20 +1,562 @@
 {
-  "2": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Cenicero-Las Lindes", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "3": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · El Morche", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "4": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Ferrara", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "5": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Calaceite", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "6": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Burriana", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "7": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Playazo", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "8": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Calas Orientales (Maro)", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "9": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Rincón Victoria", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "10": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Cala del Moral", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "11": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · El Palo", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "12": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Pedregalejos-Acacias", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "13": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Malagueta", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "15": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Guadalmar", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "16": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Los Álamos", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "17": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · La Carihuela", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "18": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · La Cala", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "19": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · El Bombo", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" },
-  "20": { "status": "safe", "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.", "updatedAt": "2026-08-03T00:00:00+02:00", "effectiveUntil": "2026-08-31T23:59:59+02:00", "source": "Junta de Andalucía · Calahonda 1, 2 y 3", "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf" }
+  "manilva-sabinillas": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Sabinillas",
+    "sanitaryZone": "Sabinillas",
+    "sanitaryAssociation": "individual"
+  },
+  "manilva-la-duquesa-el-castillo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Castillo",
+    "sanitaryZone": "El Castillo",
+    "sanitaryAssociation": "individual"
+  },
+  "casares-playa-ancha": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Playa Ancha",
+    "sanitaryZone": "Playa Ancha",
+    "sanitaryAssociation": "individual"
+  },
+  "estepona-la-rada": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Rada",
+    "sanitaryZone": "La Rada",
+    "sanitaryAssociation": "individual"
+  },
+  "estepona-el-cristo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Cristo",
+    "sanitaryZone": "El Cristo",
+    "sanitaryAssociation": "individual"
+  },
+  "estepona-el-padron": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Padrón",
+    "sanitaryZone": "El Padrón",
+    "sanitaryAssociation": "individual"
+  },
+  "estepona-el-saladillo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Saladillo",
+    "sanitaryZone": "El Saladillo",
+    "sanitaryAssociation": "individual"
+  },
+  "marbella-san-pedro-de-alcantara": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Guadalmina–San Pedro.",
+    "source": "Junta de Andalucía · Guadalmina–San Pedro",
+    "sanitaryZone": "Guadalmina–San Pedro",
+    "sanitaryAssociation": "grouped"
+  },
+  "marbella-puerto-banus": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Puerto Banús",
+    "sanitaryZone": "Puerto Banús",
+    "sanitaryAssociation": "individual"
+  },
+  "marbella-nagueles": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Nagüeles",
+    "sanitaryZone": "Nagüeles",
+    "sanitaryAssociation": "individual"
+  },
+  "marbella-la-fontanilla": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Fontanilla–Faro.",
+    "source": "Junta de Andalucía · Fontanilla–Faro",
+    "sanitaryZone": "Fontanilla–Faro",
+    "sanitaryAssociation": "grouped"
+  },
+  "marbella-la-venus": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Venus–Bajadilla.",
+    "source": "Junta de Andalucía · Venus–Bajadilla",
+    "sanitaryZone": "Venus–Bajadilla",
+    "sanitaryAssociation": "grouped"
+  },
+  "marbella-los-monteros": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Los Monteros",
+    "sanitaryZone": "Los Monteros",
+    "sanitaryAssociation": "individual"
+  },
+  "marbella-artola-cabopino": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Artola",
+    "sanitaryZone": "Artola",
+    "sanitaryAssociation": "individual"
+  },
+  "mijas-calahonda-este": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Calahonda 1, 2 y 3.",
+    "source": "Junta de Andalucía · Calahonda 1, 2 y 3",
+    "sanitaryZone": "Calahonda 1, 2 y 3",
+    "sanitaryAssociation": "grouped"
+  },
+  "mijas-el-bombo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Bombo",
+    "sanitaryZone": "El Bombo",
+    "sanitaryAssociation": "individual"
+  },
+  "mijas-la-cala-butibamba": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Cala",
+    "sanitaryZone": "La Cala",
+    "sanitaryAssociation": "individual"
+  },
+  "fuengirola-el-castillo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Castillo",
+    "sanitaryZone": "El Castillo",
+    "sanitaryAssociation": "individual"
+  },
+  "fuengirola": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Fuengirola",
+    "sanitaryZone": "Fuengirola",
+    "sanitaryAssociation": "individual"
+  },
+  "fuengirola-los-boliches-gaviotas": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Boliches–Gaviotas.",
+    "source": "Junta de Andalucía · Boliches–Gaviotas",
+    "sanitaryZone": "Boliches–Gaviotas",
+    "sanitaryAssociation": "grouped"
+  },
+  "fuengirola-carvajal-la-torre": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Carvajal",
+    "sanitaryZone": "Carvajal",
+    "sanitaryAssociation": "individual"
+  },
+  "benalmadena-carvajal": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Torremuelle–Carvajal.",
+    "source": "Junta de Andalucía · Torremuelle–Carvajal",
+    "sanitaryZone": "Torremuelle–Carvajal",
+    "sanitaryAssociation": "grouped"
+  },
+  "benalmadena-torremuelle": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Torremuelle–Carvajal.",
+    "source": "Junta de Andalucía · Torremuelle–Carvajal",
+    "sanitaryZone": "Torremuelle–Carvajal",
+    "sanitaryAssociation": "grouped"
+  },
+  "benalmadena-bil-bil": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Bil Bil–Arroyo de la Miel.",
+    "source": "Junta de Andalucía · Bil Bil–Arroyo de la Miel",
+    "sanitaryZone": "Bil Bil–Arroyo de la Miel",
+    "sanitaryAssociation": "grouped"
+  },
+  "benalmadena-santa-ana": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Malapesquera–Santa Ana.",
+    "source": "Junta de Andalucía · Malapesquera–Santa Ana",
+    "sanitaryZone": "Malapesquera–Santa Ana",
+    "sanitaryAssociation": "grouped"
+  },
+  "benalmadena-malapesquera": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Malapesquera–Santa Ana.",
+    "source": "Junta de Andalucía · Malapesquera–Santa Ana",
+    "sanitaryZone": "Malapesquera–Santa Ana",
+    "sanitaryAssociation": "grouped"
+  },
+  "benalmadena-fuente-de-la-salud": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Fuente de la Salud",
+    "sanitaryZone": "Fuente de la Salud",
+    "sanitaryAssociation": "individual"
+  },
+  "torremolinos-la-carihuela": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Carihuela",
+    "sanitaryZone": "La Carihuela",
+    "sanitaryAssociation": "individual"
+  },
+  "torremolinos-el-bajondillo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Bajondillo",
+    "sanitaryZone": "El Bajondillo",
+    "sanitaryAssociation": "individual"
+  },
+  "torremolinos-playamar": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Playamar",
+    "sanitaryZone": "Playamar",
+    "sanitaryAssociation": "individual"
+  },
+  "torremolinos-los-alamos": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Los Álamos",
+    "sanitaryZone": "Los Álamos",
+    "sanitaryAssociation": "individual"
+  },
+  "malaga-guadalmar": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Guadalmar",
+    "sanitaryZone": "Guadalmar",
+    "sanitaryAssociation": "individual"
+  },
+  "malaga-la-malagueta": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Malagueta",
+    "sanitaryZone": "Malagueta",
+    "sanitaryAssociation": "individual"
+  },
+  "malaga-la-caleta": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Caleta",
+    "sanitaryZone": "La Caleta",
+    "sanitaryAssociation": "individual"
+  },
+  "malaga-pedregalejo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Pedregalejos–Acacias.",
+    "source": "Junta de Andalucía · Pedregalejos–Acacias",
+    "sanitaryZone": "Pedregalejos–Acacias",
+    "sanitaryAssociation": "grouped"
+  },
+  "malaga-el-palo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Palo",
+    "sanitaryZone": "El Palo",
+    "sanitaryAssociation": "individual"
+  },
+  "malaga-el-dedo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Dedo",
+    "sanitaryZone": "El Dedo",
+    "sanitaryAssociation": "individual"
+  },
+  "rincon-la-cala-del-moral": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Cala del Moral",
+    "sanitaryZone": "Cala del Moral",
+    "sanitaryAssociation": "individual"
+  },
+  "rincon-playa-del-rincon-de-la-victoria": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Rincón Victoria",
+    "sanitaryZone": "Rincón Victoria",
+    "sanitaryAssociation": "individual"
+  },
+  "rincon-playas-de-benagalbon": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Torre Benagalbón y Los Rubios.",
+    "source": "Junta de Andalucía · Torre Benagalbón y Los Rubios",
+    "sanitaryZone": "Torre Benagalbón y Los Rubios",
+    "sanitaryAssociation": "grouped"
+  },
+  "velez-malaga-chilches": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Chilches",
+    "sanitaryZone": "Chilches",
+    "sanitaryAssociation": "individual"
+  },
+  "velez-malaga-benajarafe": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Benajarafe",
+    "sanitaryZone": "Benajarafe",
+    "sanitaryAssociation": "individual"
+  },
+  "velez-malaga-torre-del-mar": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Torre del Mar",
+    "sanitaryZone": "Torre del Mar",
+    "sanitaryAssociation": "individual"
+  },
+  "velez-malaga-caleta-de-velez": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Caleta",
+    "sanitaryZone": "La Caleta",
+    "sanitaryAssociation": "individual"
+  },
+  "algarrobo-costa": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Algarrobo",
+    "sanitaryZone": "Algarrobo",
+    "sanitaryAssociation": "individual"
+  },
+  "torrox-el-morche": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Morche",
+    "sanitaryZone": "El Morche",
+    "sanitaryAssociation": "individual"
+  },
+  "torrox-cenicero-las-lindes": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Cenicero–Las Lindes",
+    "sanitaryZone": "Cenicero–Las Lindes",
+    "sanitaryAssociation": "individual"
+  },
+  "torrox-ferrara": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Ferrara",
+    "sanitaryZone": "Ferrara",
+    "sanitaryAssociation": "individual"
+  },
+  "torrox-el-penoncillo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · El Peñoncillo",
+    "sanitaryZone": "El Peñoncillo",
+    "sanitaryAssociation": "individual"
+  },
+  "torrox-las-dunas-la-carraca": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. Zona sanitaria oficial asociada: Cenicero–Las Lindes.",
+    "source": "Junta de Andalucía · Cenicero–Las Lindes",
+    "sanitaryZone": "Cenicero–Las Lindes",
+    "sanitaryAssociation": "associated"
+  },
+  "nerja-el-playazo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Playazo",
+    "sanitaryZone": "Playazo",
+    "sanitaryAssociation": "individual"
+  },
+  "nerja-la-torrecilla": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Torrecilla",
+    "sanitaryZone": "Torrecilla",
+    "sanitaryAssociation": "individual"
+  },
+  "nerja-el-salon": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Calas Occidentales.",
+    "source": "Junta de Andalucía · Calas Occidentales",
+    "sanitaryZone": "Calas Occidentales",
+    "sanitaryAssociation": "grouped"
+  },
+  "nerja-burriana": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Burriana",
+    "sanitaryZone": "Burriana",
+    "sanitaryAssociation": "individual"
+  },
+  "nerja-playa-de-maro": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Calas Orientales (Maro).",
+    "source": "Junta de Andalucía · Calas Orientales (Maro)",
+    "sanitaryZone": "Calas Orientales (Maro)",
+    "sanitaryAssociation": "grouped"
+  },
+  "nerja-el-canuelo": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_malaga_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026. El resultado corresponde a la zona sanitaria agrupada Calas Orientales (Maro).",
+    "source": "Junta de Andalucía · Calas Orientales (Maro)",
+    "sanitaryZone": "Calas Orientales (Maro)",
+    "sanitaryAssociation": "grouped"
+  }
 }

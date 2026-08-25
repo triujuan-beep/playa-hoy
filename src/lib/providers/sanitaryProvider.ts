@@ -1,8 +1,8 @@
 import "server-only";
 import records from "@/data/sanitary-status.json";
-import type { SanitaryStatus } from "../types";
+import type { SanitaryAssociation,SanitaryStatus } from "../types";
 
-export type SanitaryResult={status:SanitaryStatus;message?:string;updatedAt?:string;source?:string;sourceUrl?:string;effectiveFrom?:string;effectiveUntil?:string};
+export type SanitaryResult={status:SanitaryStatus;message?:string;updatedAt?:string;source?:string;sourceUrl?:string;effectiveFrom?:string;effectiveUntil?:string;sanitaryZone?:string;sanitaryAssociation?:SanitaryAssociation};
 type SanitaryRecord=Omit<SanitaryResult,"status">&{status:"safe"|"warning"|"closed"};
 const SOURCE_URL="https://www.juntadeandalucia.es/organismos/presidenciasanidadyemergencias/areas/sanidad/entornos-saludables/salud-ambiental/paginas/zonas-bano.html";
 

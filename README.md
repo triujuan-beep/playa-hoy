@@ -36,11 +36,11 @@ En Vercel, configura estas variables en **Project → Settings → Environment V
 ## Arquitectura de datos
 
 ```text
-src/lib/mock-beaches.ts               Catálogo de 20 playas y datos demo
+src/lib/mock-beaches.ts               Catálogo v2 de 58 playas y datos demo
 src/lib/providers/weatherProvider.ts  AEMET OpenData
 src/lib/providers/seaProvider.ts      Open-Meteo Marine, batch y caché
 src/lib/providers/sanitaryProvider.ts Feed sanitario/manual con vigencia
-src/lib/providers/jellyfishProvider.ts Sin fuente real por ahora
+src/lib/providers/medusAppProvider.ts  Observaciones colaborativas de MedusApp
 src/lib/providers/occupancyProvider.ts Sin fuente real por ahora
 src/lib/services/beachDataService.ts   Carga, agrupa, fusiona y normaliza
 src/lib/scoring.ts                     Score y completitud de datos
@@ -51,17 +51,21 @@ La UI solo consume el modelo normalizado `Beach`. Nunca llama directamente a AEM
 
 ### Meteorología
 
-`weatherProvider` consulta la predicción horaria municipal de AEMET y normaliza temperatura ambiente, viento, rachas, dirección y probabilidad de lluvia. Las consultas se agrupan por municipio: las 20 playas actuales generan seis predicciones municipales, no una por playa y usuario. Cada predicción sigue el flujo oficial de dos pasos: metadata con una URL temporal `datos` y descarga del JSON meteorológico.
+`weatherProvider` consulta la predicción horaria municipal de AEMET y normaliza temperatura ambiente, viento, rachas, dirección y probabilidad de lluvia. Las consultas se agrupan por los 14 municipios, no por playa ni usuario. Cada predicción sigue el flujo oficial de dos pasos: metadata con una URL temporal `datos` y descarga del JSON meteorológico.
 
-El resultado normalizado completo se conserva 900 segundos con la caché server-side de Next.js; en Vercel, esa Data Cache se comparte entre usuarios del mismo proyecto. La URL temporal nunca se cachea. Las solicitudes simultáneas se deduplican y los municipios se procesan en cola dentro de cada instancia para reducir errores 429. Los fallos no se guardan en caché. Si falta la clave o AEMET falla, las métricas quedan ausentes y el error se registra únicamente en servidor sin exponer la API key.
+El resultado normalizado completo se conserva 3600 segundos con la caché server-side de Next.js. La URL temporal nunca se cachea. Las solicitudes simultáneas se deduplican y los municipios se procesan secuencialmente con un segundo de separación dentro de cada instancia. El provider aplica timeout, reintentos exponenciales y `Retry-After` ante 429/5xx. El último resultado válido se conserva durante 48 horas en Vercel Runtime Cache (por región) y se etiqueta claramente como dato anterior cuando AEMET falla.
 
-La deduplicación en memoria no coordina instancias o regiones distintas. Un despliegue en frío o revalidaciones simultáneas pueden repetir alguna consulta y provocar un 429 de AEMET. El provider respeta `Retry-After`, reintenta con espera y degrada sin romper la página, pero no mantiene un último valor válido fuera de la caché. Conviene vigilar los logs de funciones durante el primer despliegue antes de reducir el intervalo de 900 segundos.
+La deduplicación en memoria no coordina instancias o regiones distintas y Runtime Cache es regional. Un despliegue en frío o revalidaciones simultáneas en regiones diferentes pueden repetir alguna consulta. Con tráfico continuo, una región realiza como máximo 14 renovaciones horarias, equivalentes a 28 solicitudes HTTP por hora por el flujo de dos pasos. Conviene vigilar 429 en los logs antes de reducir la caché.
 
 ### Estado del mar
 
-`seaProvider` consulta `https://marine-api.open-meteo.com/v1/marine` con las 20 coordenadas en un único batch. Solicita 2 días horarios en `Europe/Madrid`: temperatura superficial, altura/dirección/periodo de ola, swell y corriente oceánica. Selecciona el valor más próximo a la hora local actual y conserva la estructura horaria para facilitar un selector futuro.
+`seaProvider` consulta `https://marine-api.open-meteo.com/v1/marine` en tres lotes independientes de 20, 20 y 18 coordenadas. Solicita 2 días horarios en `Europe/Madrid`: temperatura superficial, altura/dirección/periodo de ola, swell y corriente oceánica. Si un lote falla, los otros dos siguen disponibles.
 
-La petición usa la caché server-side de `fetch` con revalidación de 1800 segundos. Así, el tráfico normal genera como máximo unas 48 consultas al día para el conjunto completo, no una por usuario ni por playa. La temperatura y el oleaje son predicciones de modelo, no mediciones físicas en cada playa. Open-Meteo Marine publica oleaje con resolución aproximada de 5 km y advierte que corrientes y mareas rondan 8 km y tienen precisión costera limitada.
+Cada petición usa la caché server-side de `fetch` con revalidación de 1800 segundos. Con tráfico continuo son como máximo 144 peticiones diarias por región para el catálogo completo. La temperatura y el oleaje son predicciones de modelo, no mediciones físicas en cada playa.
+
+### MedusApp
+
+Las 58 coordenadas se consultan individualmente en grupos pequeños porque el endpoint comunitario es radial. Cada resultado se conserva dos horas; el máximo teórico con tráfico continuo es 696 peticiones diarias por región. `no_recent_reports` no significa ausencia garantizada de medusas. A futuro puede evaluarse una malla zonal con agregación espacial, validando antes que no cambie la semántica del radio de 5 km.
 
 Los datos se muestran como `Predicción · Open-Meteo` y se atribuyen a [Open-Meteo](https://open-meteo.com/) y DWD conforme a CC BY 4.0.
 
@@ -85,7 +89,15 @@ El provider acepta estados `safe`, `warning`, `closed` y `unknown`. Cada registr
 
 El JSON puede vivir en `src/data/sanitary-status.json` o en el feed configurado mediante `SANITARY_DATA_URL`. Los registros futuros o caducados no se consideran activos. La caché del feed sanitario revalida cada 3600 segundos.
 
-Ante ausencia de datos, se devuelve `unknown`: nunca se asume que una playa está abierta. `closed` y `unknown` tienen score 0 y quedan fuera de la recomendación; `warning` recibe una penalización fuerte.
+El catálogo incluye 56 correspondencias oficiales: individuales, agrupadas o asociadas. Solo Misericordia y El Faro (Mijas) permanecen `unknown`; esa ausencia no implica incidencia y no las excluye. `closed` sí excluye y `warning` recibe una penalización fuerte.
+
+El snapshot se actualiza localmente, nunca mediante scraping en runtime. Tras descargar y revisar el informe quincenal oficial:
+
+```bash
+python scripts/update-sanitary-status.py tmp/pdfs/informe.pdf --effective-until 2026-08-31 --source-url https://www.juntadeandalucia.es/.../informe.pdf
+```
+
+El script exige 56 asociaciones, toma el peor estado cuando una playa agrupa varios puntos y genera un diff revisable. Requiere `pip install -r scripts/requirements-sanitary.txt`.
 
 ## Score, faltantes y confianza
 
@@ -113,8 +125,8 @@ No se implementa scraping.
 - Open-Meteo representa celdas de modelo, no sensores en la orilla; puede diferir de boyas, banderas y observaciones de socorristas.
 - Las corrientes modelizadas tienen menor precisión cerca de costa y no son aptas para navegación.
 - Los controles sanitarios oficiales pueden publicarse con periodicidad quincenal; cierres extraordinarios requieren un canal de avisos más inmediato.
-- Medusas y ocupación solo existen en modo demo. En modo real se muestran como no disponibles.
-- No existe almacenamiento persistente del último dato válido; la caché de Vercel reduce llamadas y conserva respuestas entre revalidaciones, pero un almacén durable sería una mejora posterior.
+- MedusApp es una fuente colaborativa y ausencia de reportes no equivale a ausencia de medusas; la ocupación sigue sin fuente real.
+- El último dato de AEMET es un fallback temporal regional, no un histórico durable global.
 
 ## Despliegue
 

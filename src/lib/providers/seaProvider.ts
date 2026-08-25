@@ -1,4 +1,5 @@
 import "server-only";
+import { runIndependentBatches,splitIntoBatches } from "../provider-utils";
 
 const API_URL="https://marine-api.open-meteo.com/v1/marine";
 export const OPEN_METEO_MARINE_DOCS="https://open-meteo.com/en/docs/marine-weather-api";
@@ -61,13 +62,10 @@ async function fetchBatch(beaches:MarineBeach[]){
  return Array.isArray(payload)?payload:[payload];
 }
 
+export function splitMarineBatches(beaches:MarineBeach[]){return splitIntoBatches(beaches,MARINE_BATCH_SIZE)}
+
 export async function getMarineForecastForBeaches(beaches:MarineBeach[]):Promise<Record<string,SeaResult>>{
  const result:Record<string,SeaResult>={};
- try{
-  for(let start=0;start<beaches.length;start+=MARINE_BATCH_SIZE){
-   const batch=beaches.slice(start,start+MARINE_BATCH_SIZE);const responses=await fetchBatch(batch);
-   responses.forEach((response,index)=>{const beach=batch[response.location_id??index];const normalized=normalize(response);if(beach&&normalized)result[beach.id]=normalized});
-  }
- }catch(error){console.error("[seaProvider] No se pudieron cargar predicciones de Open-Meteo Marine",error instanceof Error?error.message:"Error desconocido")}
+ await runIndependentBatches(splitMarineBatches(beaches),async batch=>{const responses=await fetchBatch(batch);responses.forEach((response,index)=>{const beach=batch[response.location_id??index];const normalized=normalize(response);if(beach&&normalized)result[beach.id]=normalized})},(error,batchIndex)=>console.error(`[seaProvider] Falló el lote ${batchIndex+1}; continúan los demás lotes`,error instanceof Error?error.message:"Error desconocido"));
  return result;
 }
