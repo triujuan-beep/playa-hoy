@@ -1,4 +1,5 @@
 import type { Beach,MetricKey } from "./types";
+import { jellyfishObservationCompact } from "./jellyfish-display";
 
 export type DisplayMetric={icon:string;value:string;label:string;origin?:string};
 const number=(value:number|undefined,digits=0)=>value===undefined?"—":value.toFixed(digits);
@@ -13,7 +14,9 @@ export function getBeachSummaryMetrics(beach:Beach):DisplayMetric[]{
     beach.waveHeight!==undefined
       ? {icon:"≈",value:`${number(beach.waveHeight,1)} m`,label:"Olas",origin:origin(beach,"waveHeight")}
       : {icon:"↠",value:beach.windGust===undefined?"—":`${number(beach.windGust)} km/h`,label:"Rachas",origin:origin(beach,"windGust")},
-    beach.jellyfishRisk!==undefined
+    beach.jellyfishObservation
+      ? {icon:"🪼",value:jellyfishObservationCompact(beach.jellyfishObservation.status),label:"Medusas",origin:"Obs."}
+      : beach.jellyfishRisk!==undefined
       ? {icon:"♨",value:`${number(beach.jellyfishRisk)}%`,label:"Medusas",origin:origin(beach,"jellyfishRisk")}
       : {icon:"☂",value:beach.rainProbability===undefined?"—":`${number(beach.rainProbability)}%`,label:"Lluvia",origin:origin(beach,"rainProbability")},
   ];

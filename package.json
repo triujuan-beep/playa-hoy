@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test:medusapp": "node --experimental-strip-types --test --test-isolation=none research/medusapp/product-core.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
