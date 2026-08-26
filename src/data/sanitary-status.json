@@ -558,5 +558,55 @@
     "source": "Junta de Andalucía · Calas Orientales (Maro)",
     "sanitaryZone": "Calas Orientales (Maro)",
     "sanitaryAssociation": "grouped"
+  },
+  "almunecar-la-herradura": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_granada_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · La Herradura",
+    "sanitaryZone": "La Herradura",
+    "sanitaryAssociation": "individual"
+  },
+  "almunecar-cotobro": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_granada_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Cotobro",
+    "sanitaryZone": "Cotobro",
+    "sanitaryAssociation": "individual"
+  },
+  "almunecar-san-cristobal": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_granada_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · San Cristóbal",
+    "sanitaryZone": "San Cristóbal",
+    "sanitaryAssociation": "individual"
+  },
+  "almunecar-puerta-del-mar": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_granada_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Puerta del Mar",
+    "sanitaryZone": "Puerta del Mar",
+    "sanitaryAssociation": "individual"
+  },
+  "almunecar-velilla": {
+    "status": "safe",
+    "updatedAt": "2026-08-03T00:00:00+02:00",
+    "effectiveUntil": "2026-08-31T23:59:59+02:00",
+    "sourceUrl": "https://www.juntadeandalucia.es/sites/default/files/inline-files/2026/08/maritimas_granada_20260814.pdf",
+    "message": "Zona apta para el baño. Inspección oficial del 03/08/2026.",
+    "source": "Junta de Andalucía · Velilla",
+    "sanitaryZone": "Velilla",
+    "sanitaryAssociation": "individual"
   }
 }

@@ -1,7 +1,7 @@
 import type { Beach,CoastZone } from "./types";
 
-type CatalogBeach=Pick<Beach,"id"|"slug"|"legacySlugs"|"aliases"|"name"|"municipality"|"coastZone"|"latitude"|"longitude">;
-const beach=(slug:string,name:string,municipality:string,coastZone:CoastZone,latitude:number,longitude:number,options:Pick<CatalogBeach,"legacySlugs"|"aliases">={}):CatalogBeach=>({id:slug,slug,name,municipality,coastZone,latitude,longitude,...options});
+type CatalogBeach=Pick<Beach,"id"|"slug"|"legacySlugs"|"aliases"|"name"|"municipality"|"province"|"autonomousCommunity"|"coastZone"|"latitude"|"longitude">;
+const beach=(slug:string,name:string,municipality:string,coastZone:CoastZone,latitude:number,longitude:number,options:Pick<CatalogBeach,"legacySlugs"|"aliases">&Partial<Pick<CatalogBeach,"province"|"autonomousCommunity">>={}):CatalogBeach=>({id:slug,slug,name,municipality,province:options.province??"Málaga",autonomousCommunity:options.autonomousCommunity??"Andalucía",coastZone,latitude,longitude,legacySlugs:options.legacySlugs,aliases:options.aliases});
 
 const catalog:CatalogBeach[]=[
  beach("manilva-sabinillas","Sabinillas","Manilva","occidental",36.363393,-5.226350),
@@ -62,6 +62,11 @@ const catalog:CatalogBeach[]=[
  beach("nerja-burriana","Burriana","Nerja","oriental",36.750500,-3.866254,{legacySlugs:["burriana"]}),
  beach("nerja-playa-de-maro","Playa de Maro","Nerja","oriental",36.753946,-3.834640,{legacySlugs:["maro"],aliases:["Maro"]}),
  beach("nerja-el-canuelo","El Cañuelo","Nerja","oriental",36.744659,-3.789052),
+ beach("almunecar-la-herradura","La Herradura","Almuñécar","oriental",36.733183,-3.744979,{province:"Granada"}),
+ beach("almunecar-cotobro","Cotobro","Almuñécar","oriental",36.733056,-3.714722,{province:"Granada"}),
+ beach("almunecar-san-cristobal","San Cristóbal","Almuñécar","oriental",36.731000,-3.699059,{province:"Granada"}),
+ beach("almunecar-puerta-del-mar","Puerta del Mar","Almuñécar","oriental",36.730375,-3.686660,{province:"Granada"}),
+ beach("almunecar-velilla","Velilla","Almuñécar","oriental",36.737970,-3.668216,{province:"Granada"}),
 ];
 
 const updatedAt="2026-08-25T09:00:00+02:00";

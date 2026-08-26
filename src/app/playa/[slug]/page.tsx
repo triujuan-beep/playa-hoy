@@ -1,19 +1,500 @@
-import type { Metadata } from "next";import Image from "next/image";import Link from "next/link";import { notFound } from "next/navigation";import appIcon from "@/app/icon.png";
-import { getBeachData } from "@/lib/services/beachDataService";import { calculateBeachScore,explainRecommendation } from "@/lib/scoring";import { getGoogleMapsDirectionsUrl } from "@/lib/maps";import { formatDataAge } from "@/lib/time";import { formatCardinalDegrees,formatDecimal } from "@/lib/number-format";import { jellyfishObservationAge,jellyfishObservationLabel,jellyfishObservationTone } from "@/lib/jellyfish-display";import type { Beach,DataSourceInfo,JellyfishObservation,MetricKey,MetricMetadata } from "@/lib/types";import { BeachScore } from "@/components/BeachScore";import { SanitaryStatus } from "@/components/SanitaryStatus";import { BeachEvolution } from "@/components/BeachEvolution";
-export const revalidate=900;
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import appIcon from "@/app/icon.png";
+import { getBeachData } from "@/lib/services/beachDataService";
+import { calculateBeachScore, explainRecommendation } from "@/lib/scoring";
+import { getGoogleMapsDirectionsUrl } from "@/lib/maps";
+import { formatDataAge } from "@/lib/time";
+import { formatCardinalDegrees, formatDecimal } from "@/lib/number-format";
+import {
+  jellyfishObservationAge,
+  jellyfishObservationLabel,
+  jellyfishObservationTone,
+} from "@/lib/jellyfish-display";
+import type {
+  Beach,
+  DataSourceInfo,
+  JellyfishObservation,
+  MetricKey,
+  MetricMetadata,
+} from "@/lib/types";
+import { BeachScore } from "@/components/BeachScore";
+import { SanitaryStatus } from "@/components/SanitaryStatus";
+import { BeachEvolution } from "@/components/BeachEvolution";
+export const revalidate = 900;
 // Las fichas se generan al visitarlas para no multiplicar las llamadas a AEMET durante el build.
-export function generateStaticParams(){return []}
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const{slug}=await params;const beach=await getBeachData(slug);return beach?{title:`${beach.name} hoy · Playa Hoy`,description:`Condiciones de baño, viento, oleaje y calidad del agua en ${beach.name}, ${beach.municipality}.`,openGraph:{images:[]},twitter:{images:[]}}:{}}
-export default async function BeachDetail({params}:{params:Promise<{slug:string}>}) {const{slug}=await params;const beach=await getBeachData(slug);if(!beach)notFound();const referenceTime=new Date().toISOString();const score=calculateBeachScore(beach);const statusTitle=beach.sanitaryStatus==="safe"?"Agua apta para el baño":beach.sanitaryStatus==="warning"?"Precaución sanitaria":beach.sanitaryStatus==="closed"?"Baño prohibido":"Estado sanitario específico no disponible";const statusStyle=beach.sanitaryStatus==="safe"?"border-emerald-200 bg-emerald-50":beach.sanitaryStatus==="warning"?"border-amber-200 bg-amber-50":beach.sanitaryStatus==="closed"?"border-red-200 bg-red-50":"border-slate-200 bg-slate-50";return <main className="min-h-screen bg-[#f6f4ec]"><header className="bg-[#06455d] text-white"><div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6"><Link href="/" className="flex items-center gap-2 font-[family-name:var(--font-display)] font-extrabold"><Image src={appIcon} alt="" width={36} height={36} className="size-9 shrink-0 rounded-xl"/> Playa Hoy</Link><Link href="/" className="text-sm font-bold text-white/75 hover:text-white">← Volver al ranking</Link></div></header><section className="bg-[#075b78] text-white"><div className="mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6 sm:pt-14"><p className="text-sm font-bold text-[#a9e9df]">{beach.municipality} · Costa del Sol</p><div className="mt-3 flex items-end justify-between gap-5"><div><h1 className="text-4xl font-extrabold tracking-[-.04em] sm:text-6xl">{beach.name}</h1><p className="mt-3 text-white/60">{beach.dataMode==="mock"?"Datos de demostración":"Consulta las fechas de cada fuente más abajo"}</p></div><BeachScore score={score} size="large" dark/></div></div></section><div className="mx-auto -mt-12 max-w-5xl px-4 pb-16 sm:px-6"><section className={`rounded-3xl border p-5 shadow-lg sm:p-6 ${statusStyle}`}><SanitaryStatus status={beach.sanitaryStatus}/><h2 className="mt-3 text-xl font-extrabold">{statusTitle}</h2>{beach.sanitaryMessage&&<p className="mt-2 text-sm leading-6">{beach.sanitaryMessage}</p>}</section><div className="mt-4"><a href={getGoogleMapsDirectionsUrl(beach.latitude,beach.longitude)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#075b78] px-6 text-sm font-extrabold text-white hover:bg-[#06455d] sm:w-auto">⌖&nbsp; Cómo llegar</a></div>
- <section className="mt-6 rounded-3xl border border-[#dce5e4] bg-white p-5 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">Condiciones disponibles</p><div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#dce5e4] sm:grid-cols-4"><DetailMetric symbol="°" label="Agua" value={format(beach.waterTemperature," °C",1)} metadata={metric(beach,"waterTemperature")} demo={beach.dataMode==="mock"}/><DetailMetric symbol="☀" label="Ambiente" value={format(beach.airTemperature," °C",0)} metadata={metric(beach,"airTemperature")} demo={beach.dataMode==="mock"}/><DetailMetric symbol="↝" label="Viento" value={format(beach.windSpeed," km/h",0)} metadata={metric(beach,"windSpeed")} demo={beach.dataMode==="mock"}/><DetailMetric symbol="↠" label="Rachas" value={format(beach.windGust," km/h",0)} metadata={metric(beach,"windGust")} demo={beach.dataMode==="mock"}/><DetailMetric symbol="≈" label="Oleaje" value={format(beach.waveHeight," m",1)} metadata={metric(beach,"waveHeight")} demo={beach.dataMode==="mock"}/><DetailMetric symbol={beach.jellyfishObservation?"🪼":"♨"} label="Medusas" value={beach.jellyfishObservation?jellyfishObservationLabel(beach.jellyfishObservation.status):format(beach.jellyfishRisk,"%",0)} metadata={metric(beach,"jellyfishRisk")} provenanceText={beach.jellyfishObservation?"Observaciones de usuarios":undefined} demo={beach.dataMode==="mock"}/><DetailMetric symbol="◌" label="Ocupación" value={beach.dataMode!=="mock"&&beach.occupancy===undefined?"Próximamente":beach.occupancy===undefined?"Dato no disponible":beach.occupancy==="low"?"Baja":beach.occupancy==="high"?"Alta":"Media"} metadata={metric(beach,"occupancy")} comingSoon={beach.dataMode!=="mock"&&beach.occupancy===undefined} demo={beach.dataMode==="mock"}/><DetailMetric symbol="☂" label="Lluvia" value={format(beach.rainProbability,"%",0)} metadata={metric(beach,"rainProbability")} demo={beach.dataMode==="mock"}/></div>{beach.waveDirection!==undefined&&<div className="mt-4 rounded-2xl bg-[#f2f8f6] px-4 py-3 text-sm text-[#4c6b73]"><span className="font-extrabold text-[#075b78]">Detalle marino:</span> oleaje desde {formatCardinalDegrees(beach.waveDirection)}{beach.wavePeriod!==undefined&&` · periodo ${formatDecimal(beach.wavePeriod,1)} s`}{beach.swellWaveHeight!==undefined&&` · mar de fondo ${formatDecimal(beach.swellWaveHeight,1)} m`}{beach.oceanCurrentVelocity!==undefined&&` · corriente ${formatDecimal(beach.oceanCurrentVelocity,1)} km/h`}</div>}{beach.dataCompleteness!==undefined&&<p className="mt-4 text-xs font-bold text-[#647b86]">Familias de datos disponibles: {beach.dataCompleteness}%</p>}</section>
- {beach.jellyfishObservation&&<JellyfishObservationPanel observation={beach.jellyfishObservation} referenceTime={referenceTime}/>}<BeachEvolution beach={beach} referenceTime={referenceTime}/><section className="mt-6 rounded-3xl bg-[#dff5f0] p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">Nuestra lectura</p><h2 className="mt-2 text-2xl font-extrabold">¿Por qué la recomendamos?</h2><p className="mt-3 max-w-2xl text-base leading-7 text-[#385d66]">{explainRecommendation(beach)}</p></section><Sources sources={beach.sources} referenceTime={referenceTime}/><div className="mt-8 text-center"><Link href="/" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#075b78] px-6 text-sm font-extrabold text-[#075b78] hover:bg-white">Comparar con otras playas</Link></div></div></main>}
-const format=(value:number|undefined,suffix:string,digits:number)=>value===undefined?"Dato no disponible":`${value.toFixed(digits)}${suffix}`;
-const metric=(beach:Beach,key:MetricKey)=>beach.metricMetadata?.[key];
-const provenance=(metadata?:MetricMetadata)=>metadata?.origin==="forecast"?`Predicción${metadata.source?` · ${metadata.source}`:""}`:metadata?.origin==="observed"?`Observado${metadata.source?` · ${metadata.source}`:""}`:"No disponible";
-function DetailMetric({symbol,label,value,metadata,comingSoon=false,demo=false,provenanceText}:{symbol:string;label:string;value:string;metadata?:MetricMetadata;comingSoon?:boolean;demo?:boolean;provenanceText?:string}){return <div className="bg-[#fbfcfa] p-4 sm:p-5"><span className="text-xl font-bold text-[#078679]">{symbol}</span><p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#7a8e96]">{label}</p><p className={`mt-1 font-extrabold ${value==="Dato no disponible"?"text-sm text-[#7a8e96]":"text-lg"}`}>{value}</p><p className="mt-1 text-[10px] font-bold leading-4 text-[#7a8e96]">{provenanceText??(comingSoon?"Fuente fiable en integración":demo?"Datos de demostración":provenance(metadata))}</p></div>}
-function JellyfishObservationPanel({observation,referenceTime}:{observation:JellyfishObservation;referenceTime:string}){const tone=jellyfishObservationTone(observation.status);const style=tone==="attention"?"border-orange-200 bg-orange-50":tone==="warning"?"border-amber-200 bg-amber-50":"border-slate-200 bg-slate-50";const age=jellyfishObservationAge(observation,referenceTime);const hasPresence=observation.reportCount>0;return <section className={`mt-6 rounded-3xl border p-5 sm:p-8 ${style}`}><div className="flex items-start gap-3"><span className="text-2xl" aria-hidden>🪼</span><div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#647b86]">Medusas · observaciones</p><h2 className="mt-2 text-2xl font-extrabold">{jellyfishObservationLabel(observation.status)}</h2>{hasPresence&&<p className="mt-2 text-sm font-bold text-[#4c626b]">{observation.reportCount} {observation.reportCount===1?"reporte":"reportes"} en las últimas {observation.windowHours} h{age&&` · ${age}`}</p>}</div></div><dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4"><ObservationFact label="Fuente" value="MedusApp"/><ObservationFact label="Tipo" value="Observaciones de usuarios"/><ObservationFact label="Ventana" value={`Últimas ${observation.windowHours} h`}/><ObservationFact label="Radio" value={`${observation.radiusKm} km`}/>{hasPresence&&observation.nearestDistanceKm!==null&&<ObservationFact label="Más próximo" value={`${observation.nearestDistanceKm.toFixed(1)} km`}/>} {hasPresence&&observation.abundance&&<ObservationFact label="Abundancia indicada" value={observation.abundance}/>}</dl><p className="mt-5 text-xs leading-5 text-[#647b86]">Los avistamientos proceden de observaciones de usuarios. La ausencia de reportes no garantiza ausencia de medusas.</p><a href="https://www.medusapp.net/acercade.html" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-xs font-extrabold text-[#075b78] hover:underline">MedusApp · CC BY-NC-SA 4.0 ↗</a></section>}
-function ObservationFact({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-white/65 p-3"><dt className="text-[10px] font-extrabold uppercase tracking-wide text-[#7a8e96]">{label}</dt><dd className="mt-1 font-bold text-[#294e59]">{value}</dd></div>}
-function Sources({sources,referenceTime}:{sources:Beach["sources"];referenceTime:string}){if(!sources)return null;return <section className="mt-6 rounded-3xl border border-[#dce5e4] bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">Transparencia</p><h2 className="mt-2 text-2xl font-extrabold">Fuentes de datos</h2><div className="mt-5 grid gap-3">{Object.values(sources).map(source=><SourceRow key={source.label} source={source} referenceTime={referenceTime}/>)}</div></section>}
-const sourceLabel=(source:DataSourceInfo)=>source.stale?"Dato anterior":source.state==="mock"?"Demo":source.state==="coming-soon"?"Próximamente":source.sourceType==="crowdsourced"?"Observaciones":source.origin==="forecast"?"Predicción":source.origin==="observed"?"Verificado":"No disponible";
-const validFor=(value:string)=>{const[date,time]=value.split("T");if(!time)return value;const[year,month,day]=date.split("-");return`${day}/${month}/${year} · ${time.slice(0,5)} h`};
-function SourceRow({source,referenceTime}:{source:DataSourceInfo;referenceTime:string}){return <div className="rounded-2xl border border-[#e4ebe8] bg-[#fbfcfa] p-4 sm:flex sm:items-center sm:justify-between"><div><div className="flex items-center gap-2"><h3 className="text-sm font-extrabold">{source.label}</h3><span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${source.stale?"bg-amber-100 text-amber-700":source.sourceType==="crowdsourced"?"bg-slate-100 text-slate-600":source.origin==="forecast"?"bg-sky-100 text-sky-700":source.origin==="observed"?"bg-emerald-100 text-emerald-700":source.state==="mock"?"bg-amber-100 text-amber-700":"bg-slate-100 text-slate-600"}`}>{sourceLabel(source)}</span></div><p className="mt-1 text-sm text-[#647b86]">{source.source??source.message??"Sin fuente conectada"}{source.updatedAt&&` · ${formatDataAge(source.updatedAt,referenceTime)}`}{source.validFor&&` · Válido para ${validFor(source.validFor)}`}</p>{source.message&&source.source&&<p className="mt-1 text-xs text-[#7a8e96]">{source.message}</p>}{source.stationName&&<p className="mt-1 text-xs text-[#7a8e96]">{source.stationName}{source.stationDistanceKm!==undefined&&` · ${source.stationDistanceKm.toFixed(1)} km de la playa`}</p>}</div>{source.sourceUrl&&<a href={source.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-extrabold text-[#075b78] hover:underline sm:mt-0">Ver fuente ↗</a>}</div>}
+export function generateStaticParams() {
+  return [];
+}
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const beach = await getBeachData(slug);
+  return beach
+    ? {
+        title: `${beach.name} hoy · Playa Hoy`,
+        description: `Condiciones de baño, viento, oleaje y calidad del agua en ${beach.name}, ${beach.municipality}.`,
+        openGraph: { images: [] },
+        twitter: { images: [] },
+      }
+    : {};
+}
+export default async function BeachDetail({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const beach = await getBeachData(slug);
+  if (!beach) notFound();
+  const referenceTime = new Date().toISOString();
+  const score = calculateBeachScore(beach);
+  const statusTitle =
+    beach.sanitaryStatus === "safe"
+      ? "Agua apta para el baño"
+      : beach.sanitaryStatus === "warning"
+        ? "Precaución sanitaria"
+        : beach.sanitaryStatus === "closed"
+          ? "Baño prohibido"
+          : "Estado sanitario específico no disponible";
+  const statusStyle =
+    beach.sanitaryStatus === "safe"
+      ? "border-emerald-200 bg-emerald-50"
+      : beach.sanitaryStatus === "warning"
+        ? "border-amber-200 bg-amber-50"
+        : beach.sanitaryStatus === "closed"
+          ? "border-red-200 bg-red-50"
+          : "border-slate-200 bg-slate-50";
+  return (
+    <main className="min-h-screen bg-[#f6f4ec]">
+      <header className="bg-[#06455d] text-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-[family-name:var(--font-display)] font-extrabold"
+          >
+            <Image
+              src={appIcon}
+              alt=""
+              width={36}
+              height={36}
+              className="size-9 shrink-0 rounded-xl"
+            />{" "}
+            Playa Hoy
+          </Link>
+          <Link
+            href="/"
+            className="text-sm font-bold text-white/75 hover:text-white"
+          >
+            ← Volver al ranking
+          </Link>
+        </div>
+      </header>
+      <section className="bg-[#075b78] text-white">
+        <div className="mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6 sm:pt-14">
+          <p className="text-sm font-bold text-[#a9e9df]">
+            {beach.municipality} · {beach.province}
+          </p>
+          <div className="mt-3 flex items-end justify-between gap-5">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-[-.04em] sm:text-6xl">
+                {beach.name}
+              </h1>
+              <p className="mt-3 text-white/60">
+                {beach.dataMode === "mock"
+                  ? "Datos de demostración"
+                  : "Consulta las fechas de cada fuente más abajo"}
+              </p>
+            </div>
+            <BeachScore score={score} size="large" dark />
+          </div>
+        </div>
+      </section>
+      <div className="mx-auto -mt-12 max-w-5xl px-4 pb-16 sm:px-6">
+        <section
+          className={`rounded-3xl border p-5 shadow-lg sm:p-6 ${statusStyle}`}
+        >
+          <SanitaryStatus status={beach.sanitaryStatus} />
+          <h2 className="mt-3 text-xl font-extrabold">{statusTitle}</h2>
+          {beach.sanitaryMessage && (
+            <p className="mt-2 text-sm leading-6">{beach.sanitaryMessage}</p>
+          )}
+        </section>
+        <div className="mt-4">
+          <a
+            href={getGoogleMapsDirectionsUrl(beach.latitude, beach.longitude)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#075b78] px-6 text-sm font-extrabold text-white hover:bg-[#06455d] sm:w-auto"
+          >
+            ⌖&nbsp; Cómo llegar
+          </a>
+        </div>
+        <section className="mt-6 rounded-3xl border border-[#dce5e4] bg-white p-5 sm:p-8">
+          <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">
+            Condiciones disponibles
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#dce5e4] sm:grid-cols-4">
+            <DetailMetric
+              symbol="°"
+              label="Agua"
+              value={format(beach.waterTemperature, " °C", 1)}
+              metadata={metric(beach, "waterTemperature")}
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="☀"
+              label="Ambiente"
+              value={format(beach.airTemperature, " °C", 0)}
+              metadata={metric(beach, "airTemperature")}
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="↝"
+              label="Viento"
+              value={format(beach.windSpeed, " km/h", 0)}
+              metadata={metric(beach, "windSpeed")}
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="↠"
+              label="Rachas"
+              value={format(beach.windGust, " km/h", 0)}
+              metadata={metric(beach, "windGust")}
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="≈"
+              label="Oleaje"
+              value={format(beach.waveHeight, " m", 1)}
+              metadata={metric(beach, "waveHeight")}
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol={beach.jellyfishObservation ? "🪼" : "♨"}
+              label="Medusas"
+              value={
+                beach.jellyfishObservation
+                  ? jellyfishObservationLabel(beach.jellyfishObservation.status)
+                  : format(beach.jellyfishRisk, "%", 0)
+              }
+              metadata={metric(beach, "jellyfishRisk")}
+              provenanceText={
+                beach.jellyfishObservation
+                  ? "Observaciones de usuarios"
+                  : undefined
+              }
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="◌"
+              label="Ocupación"
+              value={
+                beach.dataMode !== "mock" && beach.occupancy === undefined
+                  ? "Próximamente"
+                  : beach.occupancy === undefined
+                    ? "Dato no disponible"
+                    : beach.occupancy === "low"
+                      ? "Baja"
+                      : beach.occupancy === "high"
+                        ? "Alta"
+                        : "Media"
+              }
+              metadata={metric(beach, "occupancy")}
+              comingSoon={
+                beach.dataMode !== "mock" && beach.occupancy === undefined
+              }
+              demo={beach.dataMode === "mock"}
+            />
+            <DetailMetric
+              symbol="☂"
+              label="Lluvia"
+              value={format(beach.rainProbability, "%", 0)}
+              metadata={metric(beach, "rainProbability")}
+              demo={beach.dataMode === "mock"}
+            />
+          </div>
+          {beach.waveDirection !== undefined && (
+            <div className="mt-4 rounded-2xl bg-[#f2f8f6] px-4 py-3 text-sm text-[#4c6b73]">
+              <span className="font-extrabold text-[#075b78]">
+                Detalle marino:
+              </span>{" "}
+              oleaje desde {formatCardinalDegrees(beach.waveDirection)}
+              {beach.wavePeriod !== undefined &&
+                ` · periodo ${formatDecimal(beach.wavePeriod, 1)} s`}
+              {beach.swellWaveHeight !== undefined &&
+                ` · mar de fondo ${formatDecimal(beach.swellWaveHeight, 1)} m`}
+              {beach.oceanCurrentVelocity !== undefined &&
+                ` · corriente ${formatDecimal(beach.oceanCurrentVelocity, 1)} km/h`}
+            </div>
+          )}
+          {beach.dataCompleteness !== undefined && (
+            <p className="mt-4 text-xs font-bold text-[#647b86]">
+              Familias de datos disponibles: {beach.dataCompleteness}%
+            </p>
+          )}
+        </section>
+        {beach.jellyfishObservation && (
+          <JellyfishObservationPanel
+            observation={beach.jellyfishObservation}
+            referenceTime={referenceTime}
+          />
+        )}
+        <BeachEvolution beach={beach} referenceTime={referenceTime} />
+        <section className="mt-6 rounded-3xl bg-[#dff5f0] p-6 sm:p-8">
+          <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">
+            Nuestra lectura
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold">
+            ¿Por qué la recomendamos?
+          </h2>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[#385d66]">
+            {explainRecommendation(beach)}
+          </p>
+        </section>
+        <Sources sources={beach.sources} referenceTime={referenceTime} />
+        <div className="mt-8 text-center">
+          <Link
+            href="/"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#075b78] px-6 text-sm font-extrabold text-[#075b78] hover:bg-white"
+          >
+            Comparar con otras playas
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+const format = (value: number | undefined, suffix: string, digits: number) =>
+  value === undefined
+    ? "Dato no disponible"
+    : `${value.toFixed(digits)}${suffix}`;
+const metric = (beach: Beach, key: MetricKey) => beach.metricMetadata?.[key];
+const provenance = (metadata?: MetricMetadata) =>
+  metadata?.origin === "forecast"
+    ? `Predicción${metadata.source ? ` · ${metadata.source}` : ""}`
+    : metadata?.origin === "observed"
+      ? `Observado${metadata.source ? ` · ${metadata.source}` : ""}`
+      : "No disponible";
+function DetailMetric({
+  symbol,
+  label,
+  value,
+  metadata,
+  comingSoon = false,
+  demo = false,
+  provenanceText,
+}: {
+  symbol: string;
+  label: string;
+  value: string;
+  metadata?: MetricMetadata;
+  comingSoon?: boolean;
+  demo?: boolean;
+  provenanceText?: string;
+}) {
+  return (
+    <div className="bg-[#fbfcfa] p-4 sm:p-5">
+      <span className="text-xl font-bold text-[#078679]">{symbol}</span>
+      <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#7a8e96]">
+        {label}
+      </p>
+      <p
+        className={`mt-1 font-extrabold ${value === "Dato no disponible" ? "text-sm text-[#7a8e96]" : "text-lg"}`}
+      >
+        {value}
+      </p>
+      <p className="mt-1 text-[10px] font-bold leading-4 text-[#7a8e96]">
+        {provenanceText ??
+          (comingSoon
+            ? "Fuente fiable en integración"
+            : demo
+              ? "Datos de demostración"
+              : provenance(metadata))}
+      </p>
+    </div>
+  );
+}
+function JellyfishObservationPanel({
+  observation,
+  referenceTime,
+}: {
+  observation: JellyfishObservation;
+  referenceTime: string;
+}) {
+  const tone = jellyfishObservationTone(observation.status);
+  const style =
+    tone === "attention"
+      ? "border-orange-200 bg-orange-50"
+      : tone === "warning"
+        ? "border-amber-200 bg-amber-50"
+        : "border-slate-200 bg-slate-50";
+  const age = jellyfishObservationAge(observation, referenceTime);
+  const hasPresence = observation.reportCount > 0;
+  return (
+    <section className={`mt-6 rounded-3xl border p-5 sm:p-8 ${style}`}>
+      <div className="flex items-start gap-3">
+        <span className="text-2xl" aria-hidden>
+          🪼
+        </span>
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#647b86]">
+            Medusas · observaciones
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold">
+            {jellyfishObservationLabel(observation.status)}
+          </h2>
+          {hasPresence && (
+            <p className="mt-2 text-sm font-bold text-[#4c626b]">
+              {observation.reportCount}{" "}
+              {observation.reportCount === 1 ? "reporte" : "reportes"} en las
+              últimas {observation.windowHours} h{age && ` · ${age}`}
+            </p>
+          )}
+        </div>
+      </div>
+      <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <ObservationFact label="Fuente" value="MedusApp" />
+        <ObservationFact label="Tipo" value="Observaciones de usuarios" />
+        <ObservationFact
+          label="Ventana"
+          value={`Últimas ${observation.windowHours} h`}
+        />
+        <ObservationFact label="Radio" value={`${observation.radiusKm} km`} />
+        {hasPresence && observation.nearestDistanceKm !== null && (
+          <ObservationFact
+            label="Más próximo"
+            value={`${observation.nearestDistanceKm.toFixed(1)} km`}
+          />
+        )}{" "}
+        {hasPresence && observation.abundance && (
+          <ObservationFact
+            label="Abundancia indicada"
+            value={observation.abundance}
+          />
+        )}
+      </dl>
+      <p className="mt-5 text-xs leading-5 text-[#647b86]">
+        Los avistamientos proceden de observaciones de usuarios. La ausencia de
+        reportes no garantiza ausencia de medusas.
+      </p>
+      <a
+        href="https://www.medusapp.net/acercade.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-block text-xs font-extrabold text-[#075b78] hover:underline"
+      >
+        MedusApp · CC BY-NC-SA 4.0 ↗
+      </a>
+    </section>
+  );
+}
+function ObservationFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-white/65 p-3">
+      <dt className="text-[10px] font-extrabold uppercase tracking-wide text-[#7a8e96]">
+        {label}
+      </dt>
+      <dd className="mt-1 font-bold text-[#294e59]">{value}</dd>
+    </div>
+  );
+}
+function Sources({
+  sources,
+  referenceTime,
+}: {
+  sources: Beach["sources"];
+  referenceTime: string;
+}) {
+  if (!sources) return null;
+  return (
+    <section className="mt-6 rounded-3xl border border-[#dce5e4] bg-white p-6 sm:p-8">
+      <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#078679]">
+        Transparencia
+      </p>
+      <h2 className="mt-2 text-2xl font-extrabold">Fuentes de datos</h2>
+      <div className="mt-5 grid gap-3">
+        {Object.values(sources).map((source) => (
+          <SourceRow
+            key={source.label}
+            source={source}
+            referenceTime={referenceTime}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+const sourceLabel = (source: DataSourceInfo) =>
+  source.stale
+    ? "Dato anterior"
+    : source.state === "mock"
+      ? "Demo"
+      : source.state === "coming-soon"
+        ? "Próximamente"
+        : source.sourceType === "crowdsourced"
+          ? "Observaciones"
+          : source.origin === "forecast"
+            ? "Predicción"
+            : source.origin === "observed"
+              ? "Verificado"
+              : "No disponible";
+const validFor = (value: string) => {
+  const [date, time] = value.split("T");
+  if (!time) return value;
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year} · ${time.slice(0, 5)} h`;
+};
+function SourceRow({
+  source,
+  referenceTime,
+}: {
+  source: DataSourceInfo;
+  referenceTime: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#e4ebe8] bg-[#fbfcfa] p-4 sm:flex sm:items-center sm:justify-between">
+      <div>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-extrabold">{source.label}</h3>
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${source.stale ? "bg-amber-100 text-amber-700" : source.sourceType === "crowdsourced" ? "bg-slate-100 text-slate-600" : source.origin === "forecast" ? "bg-sky-100 text-sky-700" : source.origin === "observed" ? "bg-emerald-100 text-emerald-700" : source.state === "mock" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}
+          >
+            {sourceLabel(source)}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-[#647b86]">
+          {source.source ?? source.message ?? "Sin fuente conectada"}
+          {source.updatedAt &&
+            ` · ${formatDataAge(source.updatedAt, referenceTime)}`}
+          {source.validFor && ` · Válido para ${validFor(source.validFor)}`}
+        </p>
+        {source.message && source.source && (
+          <p className="mt-1 text-xs text-[#7a8e96]">{source.message}</p>
+        )}
+        {source.stationName && (
+          <p className="mt-1 text-xs text-[#7a8e96]">
+            {source.stationName}
+            {source.stationDistanceKm !== undefined &&
+              ` · ${source.stationDistanceKm.toFixed(1)} km de la playa`}
+          </p>
+        )}
+      </div>
+      {source.sourceUrl && (
+        <a
+          href={source.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-block text-sm font-extrabold text-[#075b78] hover:underline sm:mt-0"
+        >
+          Ver fuente ↗
+        </a>
+      )}
+    </div>
+  );
+}

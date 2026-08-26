@@ -65,7 +65,8 @@ async function fetchBatch(beaches:MarineBeach[]){
 export function splitMarineBatches(beaches:MarineBeach[]){return splitIntoBatches(beaches,MARINE_BATCH_SIZE)}
 
 export async function getMarineForecastForBeaches(beaches:MarineBeach[]):Promise<Record<string,SeaResult>>{
- const result:Record<string,SeaResult>={};
- await runIndependentBatches(splitMarineBatches(beaches),async batch=>{const responses=await fetchBatch(batch);responses.forEach((response,index)=>{const beach=batch[response.location_id??index];const normalized=normalize(response);if(beach&&normalized)result[beach.id]=normalized})},(error,batchIndex)=>console.error(`[seaProvider] Falló el lote ${batchIndex+1}; continúan los demás lotes`,error instanceof Error?error.message:"Error desconocido"));
+ const result:Record<string,SeaResult>={};const startedAt=Date.now();
+ await runIndependentBatches(splitMarineBatches(beaches),async(batch,batchIndex)=>{const batchStartedAt=Date.now();const responses=await fetchBatch(batch);responses.forEach((response,index)=>{const beach=batch[response.location_id??index];const normalized=normalize(response);if(beach&&normalized)result[beach.id]=normalized});console.info(`[seaProvider] lote ${batchIndex+1} · ${batch.length} playas · ${Date.now()-batchStartedAt} ms`)},(error,batchIndex)=>console.error(`[seaProvider] Falló el lote ${batchIndex+1}; continúan los demás lotes`,error instanceof Error?error.message:"Error desconocido"));
+ console.info(`[seaProvider] ${beaches.length} playas · ${Date.now()-startedAt} ms total`);
  return result;
 }

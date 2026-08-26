@@ -1,6 +1,6 @@
 # Playa Hoy
 
-Aplicación responsive que recomienda la mejor playa para bañarse hoy en la Costa del Sol. Combina meteorología, estado del mar, temperatura del agua, medusas, ocupación, estado sanitario y distancia, sin presentar como real ningún dato que no esté verificado.
+Aplicación responsive que recomienda la mejor playa para bañarse hoy en la Costa del Sol y Almuñécar. Combina meteorología, estado del mar, temperatura del agua, medusas, ocupación, estado sanitario y distancia, sin presentar como real ningún dato que no esté verificado.
 
 ## Ejecutar
 
@@ -36,13 +36,13 @@ En Vercel, configura estas variables en **Project → Settings → Environment V
 ## Arquitectura de datos
 
 ```text
-src/lib/mock-beaches.ts               Catálogo v2 de 58 playas y datos demo
+src/lib/mock-beaches.ts               Catálogo v2.1 de 63 playas y datos demo
 src/lib/providers/weatherProvider.ts  AEMET OpenData
 src/lib/providers/seaProvider.ts      Open-Meteo Marine, batch y caché
 src/lib/providers/sanitaryProvider.ts Feed sanitario/manual con vigencia
 src/lib/providers/medusAppProvider.ts  Observaciones colaborativas de MedusApp
 src/lib/providers/occupancyProvider.ts Sin fuente real por ahora
-src/lib/services/beachDataService.ts   Carga, agrupa, fusiona y normaliza
+src/lib/services/beachDataService.ts   Snapshot SWR, carga, fusión y normalización
 src/lib/scoring.ts                     Score y completitud de datos
 src/data/sanitary-status.json          Overrides sanitarios locales
 ```
@@ -51,21 +51,23 @@ La UI solo consume el modelo normalizado `Beach`. Nunca llama directamente a AEM
 
 ### Meteorología
 
-`weatherProvider` consulta la predicción horaria municipal de AEMET y normaliza temperatura ambiente, viento, rachas, dirección y probabilidad de lluvia. Las consultas se agrupan por los 14 municipios, no por playa ni usuario. Cada predicción sigue el flujo oficial de dos pasos: metadata con una URL temporal `datos` y descarga del JSON meteorológico.
+`weatherProvider` consulta la predicción horaria municipal de AEMET y normaliza temperatura ambiente, viento, rachas, dirección y probabilidad de lluvia. Las consultas se agrupan por los 15 municipios, no por playa ni usuario. Cada predicción sigue el flujo oficial de dos pasos: metadata con una URL temporal `datos` y descarga del JSON meteorológico.
 
 El resultado normalizado completo se conserva 3600 segundos con la caché server-side de Next.js. La URL temporal nunca se cachea. Las solicitudes simultáneas se deduplican y los municipios se procesan secuencialmente con un segundo de separación dentro de cada instancia. El provider aplica timeout, reintentos exponenciales y `Retry-After` ante 429/5xx. El último resultado válido se conserva durante 48 horas en Vercel Runtime Cache (por región) y se etiqueta claramente como dato anterior cuando AEMET falla.
 
-La deduplicación en memoria no coordina instancias o regiones distintas y Runtime Cache es regional. Un despliegue en frío o revalidaciones simultáneas en regiones diferentes pueden repetir alguna consulta. Con tráfico continuo, una región realiza como máximo 14 renovaciones horarias, equivalentes a 28 solicitudes HTTP por hora por el flujo de dos pasos. Conviene vigilar 429 en los logs antes de reducir la caché.
+La deduplicación en memoria no coordina instancias o regiones distintas y Runtime Cache es regional. Un despliegue en frío o revalidaciones simultáneas en regiones diferentes pueden repetir alguna consulta. Con tráfico continuo, una región realiza como máximo 15 renovaciones horarias, equivalentes a 30 solicitudes HTTP por hora por el flujo de dos pasos. Conviene vigilar 429 en los logs antes de reducir la caché.
+
+El Home se prerenderiza con ISR cada 900 segundos. Sirve el último snapshot válido desde Vercel Runtime Cache (con semilla persistente en Next Data Cache) y programa mediante `after()` la renovación vencida una vez terminada la respuesta. Así AEMET y MedusApp no forman parte de la ruta crítica del usuario. El snapshot conserva siete días como fallback regional; cada provider mantiene además su propia caducidad y último dato válido. Un fallo de renovación no sustituye observaciones válidas por `unknown`.
 
 ### Estado del mar
 
-`seaProvider` consulta `https://marine-api.open-meteo.com/v1/marine` en tres lotes independientes de 20, 20 y 18 coordenadas. Solicita 2 días horarios en `Europe/Madrid`: temperatura superficial, altura/dirección/periodo de ola, swell y corriente oceánica. Si un lote falla, los otros dos siguen disponibles.
+`seaProvider` consulta `https://marine-api.open-meteo.com/v1/marine` en cuatro lotes independientes y paralelos de 20, 20, 20 y 3 coordenadas. Solicita 2 días horarios en `Europe/Madrid`: temperatura superficial, altura/dirección/periodo de ola, swell y corriente oceánica. Si un lote falla, los otros tres siguen disponibles y el snapshot conserva el último dato válido de las playas afectadas.
 
-Cada petición usa la caché server-side de `fetch` con revalidación de 1800 segundos. Con tráfico continuo son como máximo 144 peticiones diarias por región para el catálogo completo. La temperatura y el oleaje son predicciones de modelo, no mediciones físicas en cada playa.
+Cada petición usa la caché server-side de `fetch` con revalidación de 1800 segundos. Con tráfico continuo son como máximo 192 peticiones diarias por región para el catálogo completo. La temperatura y el oleaje son predicciones de modelo, no mediciones físicas en cada playa.
 
 ### MedusApp
 
-Las 58 coordenadas se consultan individualmente en grupos pequeños porque el endpoint comunitario es radial. Cada resultado se conserva dos horas; el máximo teórico con tráfico continuo es 696 peticiones diarias por región. `no_recent_reports` no significa ausencia garantizada de medusas. A futuro puede evaluarse una malla zonal con agregación espacial, validando antes que no cambie la semántica del radio de 5 km.
+Las 63 coordenadas se consultan individualmente con concurrencia máxima de cuatro porque el endpoint comunitario es radial. Cada resultado se conserva dos horas; el máximo teórico con tráfico continuo es 756 peticiones diarias por región. El último resultado válido se conserva siete días en Runtime Cache y se marca como anterior si falla una renovación. `no_recent_reports` no significa ausencia garantizada de medusas. A futuro puede evaluarse una malla zonal con agregación espacial, validando antes que no cambie la semántica del radio de 5 km.
 
 Los datos se muestran como `Predicción · Open-Meteo` y se atribuyen a [Open-Meteo](https://open-meteo.com/) y DWD conforme a CC BY 4.0.
 
@@ -89,15 +91,15 @@ El provider acepta estados `safe`, `warning`, `closed` y `unknown`. Cada registr
 
 El JSON puede vivir en `src/data/sanitary-status.json` o en el feed configurado mediante `SANITARY_DATA_URL`. Los registros futuros o caducados no se consideran activos. La caché del feed sanitario revalida cada 3600 segundos.
 
-El catálogo incluye 56 correspondencias oficiales: individuales, agrupadas o asociadas. Solo Misericordia y El Faro (Mijas) permanecen `unknown`; esa ausencia no implica incidencia y no las excluye. `closed` sí excluye y `warning` recibe una penalización fuerte.
+El catálogo incluye 61 correspondencias oficiales de Málaga y Granada: individuales, agrupadas o asociadas. Solo Misericordia y El Faro (Mijas) permanecen `unknown`; esa ausencia no implica incidencia y no las excluye. `closed` sí excluye y `warning` recibe una penalización fuerte.
 
 El snapshot se actualiza localmente, nunca mediante scraping en runtime. Tras descargar y revisar el informe quincenal oficial:
 
 ```bash
-python scripts/update-sanitary-status.py tmp/pdfs/informe.pdf --effective-until 2026-08-31 --source-url https://www.juntadeandalucia.es/.../informe.pdf
+python scripts/update-sanitary-status.py URL_INFORME_MALAGA.pdf URL_INFORME_GRANADA.pdf --effective-until 2026-08-31
 ```
 
-El script exige 56 asociaciones, toma el peor estado cuando una playa agrupa varios puntos y genera un diff revisable. Requiere `pip install -r scripts/requirements-sanitary.txt`.
+Si trabajas con PDFs locales, añade una vez por informe `--source-url MALAGA=https://...` y `--source-url GRANADA=https://...` para conservar los enlaces públicos. El script exige un informe por cada provincia presente, mantiene las 61 asociaciones, toma el peor estado cuando una playa agrupa varios puntos y genera un diff revisable. Requiere `pip install -r scripts/requirements-sanitary.txt`.
 
 ## Score, faltantes y confianza
 
