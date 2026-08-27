@@ -1,0 +1,189 @@
+name: Water Confidence Shadow
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+    inputs:
+      persist:
+        description: Commit the generated snapshot to the shadow branch
+        required: true
+        type: boolean
+        default: false
+      run_outside_window:
+        description: Allow a manual diagnostic run outside the 14-day window
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: water-confidence-shadow
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  START_DATE: "2026-08-28"
+  END_DATE: "2026-09-10"
+  DETECTOR_SHA256: E5B251686A394A936C5440C20FC6095F73899E5C0A1D6022DB18A1EC6D43204F
+  SHADOW_BRANCH: research/water-confidence-shadow
+  SHADOW_ROOT: research/water-temperature-v2/validation-v1.2/shadow
+
+jobs:
+  daily-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Decide whether the experiment is active
+        id: window
+        shell: bash
+        run: |
+          execution_date="$(date -u +%F)"
+          should_run=false
+          if [[ "$execution_date" > "${START_DATE}" || "$execution_date" == "${START_DATE}" ]]; then
+            if [[ "$execution_date" < "${END_DATE}" || "$execution_date" == "${END_DATE}" ]]; then
+              should_run=true
+            fi
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.run_outside_window }}" == "true" ]]; then
+            should_run=true
+          fi
+          echo "execution_date=$execution_date" >> "$GITHUB_OUTPUT"
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          if [[ "$should_run" != "true" ]]; then
+            echo "Water Confidence shadow is outside ${START_DATE}..${END_DATE}; no providers were called." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check out main
+        if: steps.window.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify frozen detector hash
+        if: steps.window.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          detector="research/water-temperature-v2/validation-v1.2/frozen/water-confidence-v1.2.mjs"
+          actual="$(sha256sum "$detector" | awk '{print toupper($1)}')"
+          if [[ "$actual" != "$DETECTOR_SHA256" ]]; then
+            echo "Frozen detector hash mismatch: expected $DETECTOR_SHA256, got $actual" >&2
+            exit 1
+          fi
+
+      - name: Set up Python
+        if: steps.window.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: research/water-temperature-v2/validation-v1.2/shadow/requirements-operational.txt
+
+      - name: Install official Copernicus Marine Toolbox
+        if: steps.window.outputs.should_run == 'true'
+        run: python -m pip install --requirement "$SHADOW_ROOT/requirements-operational.txt"
+
+      - name: Set up Node.js
+        if: steps.window.outputs.should_run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run operational shadow tests
+        if: steps.window.outputs.should_run == 'true'
+        run: node "$SHADOW_ROOT/operational-shadow.test.mjs"
+
+      - name: Check official Copernicus credentials
+        if: steps.window.outputs.should_run == 'true'
+        id: copernicus_auth
+        continue-on-error: true
+        env:
+          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+        run: copernicusmarine login --check-credentials-valid --log-level ERROR
+
+      - name: Read previous shadow snapshot if available
+        if: steps.window.outputs.should_run == 'true'
+        id: previous
+        shell: bash
+        run: |
+          previous_path=""
+          if git ls-remote --exit-code --heads origin "$SHADOW_BRANCH" >/dev/null 2>&1; then
+            git fetch --quiet origin "$SHADOW_BRANCH:refs/remotes/origin/$SHADOW_BRANCH"
+            latest="$(git ls-tree -r --name-only "origin/$SHADOW_BRANCH" -- "$SHADOW_ROOT/history" | sort | tail -n 1)"
+            if [[ -n "$latest" ]]; then
+              previous_path="$RUNNER_TEMP/previous-shadow.json"
+              git show "origin/$SHADOW_BRANCH:$latest" > "$previous_path"
+            fi
+          fi
+          echo "path=$previous_path" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain official Copernicus regional subset
+        if: steps.window.outputs.should_run == 'true' && steps.copernicus_auth.outcome == 'success'
+        env:
+          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+        run: >-
+          python "$SHADOW_ROOT/copernicus_official_subset.py"
+          --execution-date "${{ steps.window.outputs.execution_date }}"
+          --output "$RUNNER_TEMP/copernicus-input.json"
+          --work-directory "$RUNNER_TEMP/copernicus"
+
+      - name: Record Copernicus authentication failure safely
+        if: steps.window.outputs.should_run == 'true' && steps.copernicus_auth.outcome != 'success'
+        run: >-
+          node -e "require('node:fs').writeFileSync(process.argv[1],JSON.stringify({status:'error',provider:'Copernicus Marine Toolbox',executionDate:process.argv[2],sourceDate:null,sourceAge:null,attempts:[{status:'error',message:'credential validation failed'}],points:[]},null,2)+'\n')"
+          "$RUNNER_TEMP/copernicus-input.json"
+          "${{ steps.window.outputs.execution_date }}"
+
+      - name: Generate daily snapshot
+        if: steps.window.outputs.should_run == 'true'
+        env:
+          PREVIOUS_SNAPSHOT: ${{ steps.previous.outputs.path }}
+        run: >-
+          node "$SHADOW_ROOT/run_operational_shadow.mjs"
+          --execution-date "${{ steps.window.outputs.execution_date }}"
+          --copernicus-input "$RUNNER_TEMP/copernicus-input.json"
+          --previous-snapshot "$PREVIOUS_SNAPSHOT"
+          --output "$RUNNER_TEMP/water-confidence-${{ steps.window.outputs.execution_date }}.json"
+
+      - name: Upload diagnostic snapshot
+        if: steps.window.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: water-confidence-${{ steps.window.outputs.execution_date }}
+          path: ${{ runner.temp }}/water-confidence-${{ steps.window.outputs.execution_date }}.json
+          if-no-files-found: error
+          retention-days: 21
+
+      - name: Persist snapshot only on shadow branch
+        if: >-
+          steps.window.outputs.should_run == 'true' &&
+          (github.event_name == 'schedule' || inputs.persist == true)
+        shell: bash
+        run: |
+          snapshot="$RUNNER_TEMP/water-confidence-${{ steps.window.outputs.execution_date }}.json"
+          destination="$SHADOW_ROOT/history/${{ steps.window.outputs.execution_date }}.json"
+          if git ls-remote --exit-code --heads origin "$SHADOW_BRANCH" >/dev/null 2>&1; then
+            git fetch --quiet origin "$SHADOW_BRANCH:refs/remotes/origin/$SHADOW_BRANCH"
+            git switch --force-create "$SHADOW_BRANCH" "origin/$SHADOW_BRANCH"
+          else
+            git switch --create "$SHADOW_BRANCH"
+          fi
+          if [[ -e "$destination" ]]; then
+            echo "Snapshot already exists and will not be overwritten: $destination" >&2
+            exit 1
+          fi
+          mkdir -p "$(dirname "$destination")"
+          cp "$snapshot" "$destination"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$destination"
+          git commit -m "shadow: water confidence ${{ steps.window.outputs.execution_date }}"
+          git push origin "HEAD:refs/heads/$SHADOW_BRANCH"
+
+      - name: Fail visibly after preserving an error snapshot
+        if: steps.window.outputs.should_run == 'true'
+        run: |
+          node -e "const s=require(process.argv[1]); if(s.errors?.length){console.error('Shadow completed with provider errors:',s.errors.map(e=>e.code).join(','));process.exit(1)}" "$RUNNER_TEMP/water-confidence-${{ steps.window.outputs.execution_date }}.json"
