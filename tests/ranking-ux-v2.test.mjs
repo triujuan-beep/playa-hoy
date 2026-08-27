@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { beachMatchesSearch,scoreBeachForRanking,sortRankedBeaches } from "../src/lib/beach-ranking.ts";
+import { beachMatchesSearch,beachSearchRelevance,scoreBeachForRanking,searchRankedBeaches,sortRankedBeaches } from "../src/lib/beach-ranking.ts";
 import { beaches } from "../src/lib/mock-beaches.ts";
 import { findNearbyRecommendation } from "../src/lib/nearby-recommendation.ts";
 import { calculateBeachScore,calculateBeachScorePrecise } from "../src/lib/scoring.ts";
@@ -42,6 +42,31 @@ test("el buscador ignora acentos, mayúsculas, espacios y guiones y usa aliases 
  assert.equal(matches("mijas").length,4);
  assert.ok(matches("las   lindes").includes("Cenicero–Las Lindes"));
  assert.deepEqual(matches("playa-inexistente"),[]);
+});
+
+test("la búsqueda prioriza nombre, después alias y después municipio",()=>{
+ const victoria=beaches.find(item=>item.slug==="rincon-playa-del-rincon-de-la-victoria");
+ const municipal=beaches.find(item=>item.slug==="rincon-la-cala-del-moral");
+ const alias=beach("Alias",{name:"Nombre alternativo",aliases:["Victoria"]});
+ assert.ok(victoria&&municipal);
+ assert.equal(beachSearchRelevance(victoria,"victoria"),3);
+ assert.equal(beachSearchRelevance(alias,"victoria"),2);
+ assert.equal(beachSearchRelevance(municipal,"victoria"),1);
+ const results=searchRankedBeaches([scoreBeachForRanking(municipal),scoreBeachForRanking(alias),scoreBeachForRanking(victoria)],"victoria");
+ assert.deepEqual(results.map(item=>item.beach.name),["Playa del Rincón de la Victoria","Nombre alternativo","La Cala del Moral"]);
+ assert.equal(searchRankedBeaches(beaches.map(item=>scoreBeachForRanking(item)),"Maro")[0].beach.name,"Playa de Maro");
+ assert.equal(searchRankedBeaches(beaches.map(item=>scoreBeachForRanking(item)),"herradura")[0].beach.name,"La Herradura");
+});
+
+test("la búsqueda devuelve todas las coincidencias y combina relevancia con la ordenación",()=>{
+ const ranked=beaches.map(item=>scoreBeachForRanking(item));
+ const plain=searchRankedBeaches(ranked,"almunecar");
+ const accented=searchRankedBeaches(ranked,"Almuñécar");
+ assert.equal(plain.length,5);
+ assert.deepEqual(plain.map(item=>item.beach.id),accented.map(item=>item.beach.id));
+ const nerjaByWater=searchRankedBeaches(ranked,"Nerja","warmest");
+ assert.equal(nerjaByWater.length,6);
+ assert.deepEqual(nerjaByWater.map(item=>item.beach.waterTemperature),[...nerjaByWater].map(item=>item.beach.waterTemperature).sort((a,b)=>(b??-Infinity)-(a??-Infinity)));
 });
 
 test("las ordenaciones estrictas siguen disponibles para explorar",()=>{
