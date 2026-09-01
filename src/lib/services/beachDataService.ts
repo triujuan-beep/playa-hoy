@@ -19,6 +19,7 @@ const SNAPSHOT_REFRESH_SECONDS=15*60;
 const SNAPSHOT_TTL_SECONDS=7*24*60*60;
 const SNAPSHOT_REFRESH_LOCK_SECONDS=5*60;
 const SNAPSHOT_REFRESH_LOCK_SETTLE_MS=250;
+const SNAPSHOT_REFRESH_LOCK_CONFIRM_ATTEMPTS=8;
 const SNAPSHOT_REFRESH_POLL_MS=500;
 const SNAPSHOT_REFRESH_WAIT_MS=4*60*1000;
 let memorySnapshot:BeachDataSnapshot|undefined;
@@ -85,10 +86,13 @@ async function acquireRefreshLock(){
  const existing=await readRefreshLock();if(existing)return null;
  const lock:SnapshotRefreshLock={token:randomUUID(),expiresAt:Date.now()+SNAPSHOT_REFRESH_LOCK_SECONDS*1000};
  try{
-  await cache.set(SNAPSHOT_REFRESH_LOCK_KEY,lock,{ttl:SNAPSHOT_REFRESH_LOCK_SECONDS,tags:["beach-data-refresh-lock"],name:"Playa Hoy beach data refresh lock"});
-  await sleep(SNAPSHOT_REFRESH_LOCK_SETTLE_MS);
-  const winner=await readRefreshLock();
-  return winner?.token===lock.token?lock:null;
+ await cache.set(SNAPSHOT_REFRESH_LOCK_KEY,lock,{ttl:SNAPSHOT_REFRESH_LOCK_SECONDS,tags:["beach-data-refresh-lock"],name:"Playa Hoy beach data refresh lock"});
+  for(let attempt=0;attempt<SNAPSHOT_REFRESH_LOCK_CONFIRM_ATTEMPTS;attempt+=1){
+   await sleep(SNAPSHOT_REFRESH_LOCK_SETTLE_MS);
+   const winner=await readRefreshLock();
+   if(winner)return winner.token===lock.token?lock:null;
+  }
+  console.warn("[beachSnapshot] refresh lock could not be confirmed");return null;
  }catch(error){console.warn("[beachSnapshot] refresh lock acquire failed",error instanceof Error?error.message:"error desconocido");return lock}
 }
 async function releaseRefreshLock(lock:SnapshotRefreshLock){try{const current=await readRefreshLock();if(current?.token===lock.token)await getCache({namespace:"playa-hoy"}).delete(SNAPSHOT_REFRESH_LOCK_KEY)}catch(error){console.warn("[beachSnapshot] refresh lock release failed",error instanceof Error?error.message:"error desconocido")}}
@@ -119,7 +123,7 @@ export const getAllBeachesSnapshot=cache(async():Promise<BeachDataSnapshot>=>{
  let snapshot=await readRuntimeSnapshot();if(!snapshot)snapshot=await createCoordinatedSeed();
  return snapshot;
 });
-export function scheduleBeachDataRefresh(snapshot:BeachDataSnapshot){if(process.env.USE_MOCK_DATA?.toLowerCase()==="false"&&needsRefresh(snapshot))after(()=>refreshSnapshot(snapshot))}
+export function scheduleBeachDataRefresh(snapshot:BeachDataSnapshot){if(process.env.NEXT_PHASE!=="phase-production-build"&&process.env.USE_MOCK_DATA?.toLowerCase()==="false"&&needsRefresh(snapshot))after(()=>refreshSnapshot(snapshot))}
 export const getAllBeachesData=cache(async()=>(await getAllBeachesSnapshot()).beaches);
 export const getBeachData=cache(async(idOrSlug:string)=>(await getAllBeachesData()).find(beach=>beach.id===idOrSlug||beach.slug===idOrSlug||beach.legacySlugs?.includes(idOrSlug))??null);
 export const getBeachSnapshot=cache(async(idOrSlug:string)=>{const snapshot=await getAllBeachesSnapshot();return{beach:snapshot.beaches.find(beach=>beach.id===idOrSlug||beach.slug===idOrSlug||beach.legacySlugs?.includes(idOrSlug))??null,referenceTime:snapshot.referenceTime}});
