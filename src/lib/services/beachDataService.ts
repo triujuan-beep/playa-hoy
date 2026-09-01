@@ -1,5 +1,4 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
 import { getCache } from "@vercel/functions";
 import { unstable_cache } from "next/cache";
 import { after } from "next/server";
@@ -14,18 +13,10 @@ import { getMedusAppObservationsForBeaches,MEDUSAPP_LICENSE,MEDUSAPP_SOURCE_URL 
 
 export type BeachDataSnapshot={beaches:Beach[];referenceTime:string;refreshedAt:string};
 const SNAPSHOT_KEY="all-beaches-v21-63";
-const SNAPSHOT_REFRESH_LOCK_KEY=`${SNAPSHOT_KEY}:refresh-lock`;
 const SNAPSHOT_REFRESH_SECONDS=15*60;
 const SNAPSHOT_TTL_SECONDS=7*24*60*60;
-const SNAPSHOT_REFRESH_LOCK_SECONDS=5*60;
-const SNAPSHOT_REFRESH_LOCK_SETTLE_MS=250;
-const SNAPSHOT_REFRESH_LOCK_CONFIRM_ATTEMPTS=8;
-const SNAPSHOT_REFRESH_POLL_MS=500;
-const SNAPSHOT_REFRESH_WAIT_MS=4*60*1000;
 let memorySnapshot:BeachDataSnapshot|undefined;
 let refreshInFlight:Promise<void>|null=null;
-let seedInFlight:Promise<BeachDataSnapshot>|null=null;
-type SnapshotRefreshLock={token:string;expiresAt:number};
 
 const mockSource=(label:string):DataSourceInfo=>({state:"mock",origin:"unknown",label,source:"Datos de demostración"});
 function asMock(beach:Beach):Beach{return{...beach,dataMode:"mock",dataCompleteness:100,sources:{weather:mockSource("Meteorología"),sea:mockSource("Estado del mar"),sanitary:mockSource("Estado sanitario"),jellyfish:mockSource("Medusas"),occupancy:mockSource("Ocupación")}}}
@@ -78,51 +69,14 @@ function isSnapshot(value:unknown):value is BeachDataSnapshot{if(!value||typeof 
 async function readRuntimeSnapshot(){try{const value=await getCache({namespace:"playa-hoy"}).get(SNAPSHOT_KEY);if(isSnapshot(value))return value}catch(error){console.warn("[beachSnapshot] Runtime Cache read failed",error instanceof Error?error.message:"error desconocido")}return memorySnapshot}
 async function persistRuntimeSnapshot(snapshot:BeachDataSnapshot){memorySnapshot=snapshot;try{await getCache({namespace:"playa-hoy"}).set(SNAPSHOT_KEY,snapshot,{ttl:SNAPSHOT_TTL_SECONDS,tags:["beach-data-snapshot"],name:"Playa Hoy beach data snapshot"})}catch(error){console.warn("[beachSnapshot] Runtime Cache write failed",error instanceof Error?error.message:"error desconocido")}}
 function needsRefresh(snapshot:BeachDataSnapshot){return Date.now()-Date.parse(snapshot.refreshedAt)>=SNAPSHOT_REFRESH_SECONDS*1000}
-const sleep=(milliseconds:number)=>new Promise(resolve=>setTimeout(resolve,milliseconds));
-function isRefreshLock(value:unknown):value is SnapshotRefreshLock{if(!value||typeof value!=="object")return false;const lock=value as SnapshotRefreshLock;return typeof lock.token==="string"&&typeof lock.expiresAt==="number"}
-async function readRefreshLock(){try{const value=await getCache({namespace:"playa-hoy"}).get(SNAPSHOT_REFRESH_LOCK_KEY);return isRefreshLock(value)&&value.expiresAt>Date.now()?value:null}catch(error){console.warn("[beachSnapshot] refresh lock read failed",error instanceof Error?error.message:"error desconocido");return null}}
-async function acquireRefreshLock(){
- const cache=getCache({namespace:"playa-hoy"});
- const existing=await readRefreshLock();if(existing)return null;
- const lock:SnapshotRefreshLock={token:randomUUID(),expiresAt:Date.now()+SNAPSHOT_REFRESH_LOCK_SECONDS*1000};
- try{
- await cache.set(SNAPSHOT_REFRESH_LOCK_KEY,lock,{ttl:SNAPSHOT_REFRESH_LOCK_SECONDS,tags:["beach-data-refresh-lock"],name:"Playa Hoy beach data refresh lock"});
-  for(let attempt=0;attempt<SNAPSHOT_REFRESH_LOCK_CONFIRM_ATTEMPTS;attempt+=1){
-   await sleep(SNAPSHOT_REFRESH_LOCK_SETTLE_MS);
-   const winner=await readRefreshLock();
-   if(winner)return winner.token===lock.token?lock:null;
-  }
-  console.warn("[beachSnapshot] refresh lock could not be confirmed");return null;
- }catch(error){console.warn("[beachSnapshot] refresh lock acquire failed",error instanceof Error?error.message:"error desconocido");return lock}
-}
-async function releaseRefreshLock(lock:SnapshotRefreshLock){try{const current=await readRefreshLock();if(current?.token===lock.token)await getCache({namespace:"playa-hoy"}).delete(SNAPSHOT_REFRESH_LOCK_KEY)}catch(error){console.warn("[beachSnapshot] refresh lock release failed",error instanceof Error?error.message:"error desconocido")}}
-async function waitForCoordinatedRefresh(previousRefreshedAt:string){
- const deadline=Date.now()+SNAPSHOT_REFRESH_WAIT_MS;
- while(Date.now()<deadline){
-  const snapshot=await readRuntimeSnapshot();
-  if(snapshot&&Date.parse(snapshot.refreshedAt)>Date.parse(previousRefreshedAt)){memorySnapshot=snapshot;return true}
-  if(!(await readRefreshLock()))return false;
-  await sleep(SNAPSHOT_REFRESH_POLL_MS);
- }
- return false;
-}
-async function waitForCoordinatedSeed(){
- const deadline=Date.now()+SNAPSHOT_REFRESH_WAIT_MS;
- while(Date.now()<deadline){
-  const snapshot=await readRuntimeSnapshot();if(snapshot){memorySnapshot=snapshot;return snapshot}
-  if(!(await readRefreshLock()))return null;
-  await sleep(SNAPSHOT_REFRESH_POLL_MS);
- }
- return null;
-}
-async function createCoordinatedSeed(){if(seedInFlight)return seedInFlight;seedInFlight=(async()=>{const lock=await acquireRefreshLock();if(!lock){const shared=await waitForCoordinatedSeed();if(shared){console.info("[beachSnapshot] reused coordinated seed");return shared}console.warn("[beachSnapshot] coordinated seed unavailable; using local fallback");return getSeedSnapshot()}try{const existing=await readRuntimeSnapshot();if(existing)return existing;const snapshot=await getSeedSnapshot();await persistRuntimeSnapshot(snapshot);console.info(`[beachSnapshot] seeded ${snapshot.beaches.length} beaches`);return snapshot}finally{await releaseRefreshLock(lock)}})().finally(()=>{seedInFlight=null});return seedInFlight}
-async function refreshSnapshot(previous:BeachDataSnapshot){if(refreshInFlight)return refreshInFlight;refreshInFlight=(async()=>{const startedAt=Date.now();const lock=await acquireRefreshLock();if(!lock){const reused=await waitForCoordinatedRefresh(previous.refreshedAt);console.info(`[beachSnapshot] ${reused?"reused coordinated refresh":"coordinated refresh unavailable"}`);return}try{const latest=await readRuntimeSnapshot();if(latest&&!needsRefresh(latest)){memorySnapshot=latest;console.info("[beachSnapshot] refresh skipped; snapshot already updated");return}const fresh=await createSnapshot(latest??previous);await persistRuntimeSnapshot(fresh);console.info(`[beachSnapshot] refreshed ${fresh.beaches.length} beaches · ${Date.now()-startedAt} ms`)}catch(error){console.error("[beachSnapshot] refresh failed; keeping last valid snapshot",error instanceof Error?error.message:"error desconocido")}finally{await releaseRefreshLock(lock)}})().finally(()=>{refreshInFlight=null});return refreshInFlight}
+async function refreshSnapshot(previous:BeachDataSnapshot){if(refreshInFlight)return refreshInFlight;refreshInFlight=(async()=>{const startedAt=Date.now();try{const fresh=await createSnapshot(previous);await persistRuntimeSnapshot(fresh);console.info(`[beachSnapshot] refreshed ${fresh.beaches.length} beaches · ${Date.now()-startedAt} ms`)}catch(error){console.error("[beachSnapshot] refresh failed; keeping last valid snapshot",error instanceof Error?error.message:"error desconocido")}finally{refreshInFlight=null}})();return refreshInFlight}
 
 export const getAllBeachesSnapshot=cache(async():Promise<BeachDataSnapshot>=>{
  if(process.env.USE_MOCK_DATA?.toLowerCase()!=="false"){const referenceTime=new Date().toISOString();return{beaches:catalog.map(asMock),referenceTime,refreshedAt:referenceTime}}
- let snapshot=await readRuntimeSnapshot();if(!snapshot)snapshot=await createCoordinatedSeed();
+ let snapshot=await readRuntimeSnapshot();if(!snapshot){snapshot=await getSeedSnapshot();await persistRuntimeSnapshot(snapshot)}
  return snapshot;
 });
+// Home is the single ISR coordinator. Other routes consume the shared stale snapshot while it refreshes.
 export function scheduleBeachDataRefresh(snapshot:BeachDataSnapshot){if(process.env.NEXT_PHASE!=="phase-production-build"&&process.env.USE_MOCK_DATA?.toLowerCase()==="false"&&needsRefresh(snapshot))after(()=>refreshSnapshot(snapshot))}
 export const getAllBeachesData=cache(async()=>(await getAllBeachesSnapshot()).beaches);
 export const getBeachData=cache(async(idOrSlug:string)=>(await getAllBeachesData()).find(beach=>beach.id===idOrSlug||beach.slug===idOrSlug||beach.legacySlugs?.includes(idOrSlug))??null);

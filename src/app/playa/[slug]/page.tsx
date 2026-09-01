@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import appIcon from "@/app/icon.png";
-import { getAllBeachesSnapshot, getBeachData, scheduleBeachDataRefresh } from "@/lib/services/beachDataService";
+import { getAllBeachesSnapshot, getBeachData } from "@/lib/services/beachDataService";
 import { calculateBeachScore, explainRecommendation } from "@/lib/scoring";
 import { getGoogleMapsDirectionsUrl } from "@/lib/maps";
 import { formatDataAge } from "@/lib/time";
@@ -54,7 +54,6 @@ export default async function BeachDetail({
 }) {
   const { slug } = await params;
   const snapshot = await getAllBeachesSnapshot();
-  scheduleBeachDataRefresh(snapshot);
   const beach = snapshot.beaches.find((item) => item.id === slug || item.slug === slug || item.legacySlugs?.includes(slug)) ?? null;
   if (!beach) notFound();
   const referenceTime = snapshot.referenceTime;
