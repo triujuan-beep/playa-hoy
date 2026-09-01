@@ -8,20 +8,24 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "pnpm test:medusapp && pnpm test:v2 && pnpm test:ranking",
+    "test": "pnpm test:medusapp && pnpm test:v2 && pnpm test:ranking && pnpm test:water-map",
     "test:medusapp": "node --experimental-strip-types --test --test-isolation=none research/medusapp/product-core.test.mjs",
     "test:v2": "node --experimental-strip-types --test --test-isolation=none tests/costa-del-sol-v2.test.mjs",
-    "test:ranking": "node --experimental-strip-types --test --test-isolation=none tests/ranking-ux-v2.test.mjs"
+    "test:ranking": "node --experimental-strip-types --test --test-isolation=none tests/ranking-ux-v2.test.mjs",
+    "test:water-map": "node --experimental-strip-types --test --test-isolation=none tests/water-temperature-map.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.9.5",
+    "leaflet": "1.9.4",
     "next": "16.3.2",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "recharts": "3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import appIcon from "@/app/icon.png";
-import { getBeachData } from "@/lib/services/beachDataService";
+import { getAllBeachesSnapshot, getBeachData, scheduleBeachDataRefresh } from "@/lib/services/beachDataService";
 import { calculateBeachScore, explainRecommendation } from "@/lib/scoring";
 import { getGoogleMapsDirectionsUrl } from "@/lib/maps";
 import { formatDataAge } from "@/lib/time";
@@ -23,6 +23,9 @@ import type {
 import { BeachScore } from "@/components/BeachScore";
 import { SanitaryStatus } from "@/components/SanitaryStatus";
 import { BeachEvolution } from "@/components/BeachEvolution";
+import { WaterTemperaturePanel } from "@/components/WaterTemperaturePanel";
+import { rankMapBeaches, toMapBeaches } from "@/lib/beach-map";
+import { madridDateAndHour } from "@/lib/water-temperature";
 export const revalidate = 900;
 // Las fichas se generan al visitarlas para no multiplicar las llamadas a AEMET durante el build.
 export function generateStaticParams() {
@@ -50,9 +53,13 @@ export default async function BeachDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const beach = await getBeachData(slug);
+  const snapshot = await getAllBeachesSnapshot();
+  scheduleBeachDataRefresh(snapshot);
+  const beach = snapshot.beaches.find((item) => item.id === slug || item.slug === slug || item.legacySlugs?.includes(slug)) ?? null;
   if (!beach) notFound();
-  const referenceTime = new Date().toISOString();
+  const referenceTime = snapshot.referenceTime;
+  const currentDate = madridDateAndHour(beach.sources?.sea?.validFor ?? referenceTime).date;
+  const mapBeaches = rankMapBeaches(toMapBeaches(snapshot.beaches));
   const score = calculateBeachScore(beach);
   const statusTitle =
     beach.sanitaryStatus === "safe"
@@ -239,6 +246,15 @@ export default async function BeachDetail({
             </p>
           )}
         </section>
+        <WaterTemperaturePanel
+          slug={beach.slug}
+          currentTemperature={beach.waterTemperature}
+          currentDate={currentDate}
+          anchorTime={beach.sources?.sea?.validFor ?? referenceTime}
+          currentBeachId={beach.id}
+          mapBeaches={mapBeaches}
+          mapTilerKey={process.env.NEXT_PUBLIC_MAPTILER_API_KEY}
+        />
         {beach.jellyfishObservation && (
           <JellyfishObservationPanel
             observation={beach.jellyfishObservation}
