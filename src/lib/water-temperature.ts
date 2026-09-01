@@ -1,8 +1,8 @@
 export type WaterTemperaturePoint = { date: string; value: number | null };
 
 export const WATER_COMFORT = {
-  cold: 18,
-  veryPleasant: 23,
+  cold: 21,
+  veryPleasant: 24,
 } as const;
 
 export function waterHistoryCacheState(fetchedAt: string, now = Date.now()) {

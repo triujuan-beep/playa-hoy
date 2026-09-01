@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import type { RankedMapBeach } from "@/lib/beach-map";
-import { formatWaterTemperature, summarizeWaterTemperature, waterHistoryAvailability, type WaterTemperaturePoint } from "@/lib/water-temperature";
+import { formatWaterTemperature, summarizeWaterTemperature, waterComfort, waterHistoryAvailability, type WaterTemperaturePoint } from "@/lib/water-temperature";
 import { BeachTemperatureMap } from "./BeachTemperatureMap";
 
 const WaterChart = dynamic(() => import("./WaterTemperatureChart").then((module) => module.WaterTemperatureChart), { ssr: false, loading: () => <div className="h-72 animate-pulse rounded-2xl bg-[#edf4f2]"/> });
@@ -34,7 +34,7 @@ export function WaterTemperaturePanel({ slug, currentTemperature, currentDate, a
     </div>
     {tab === "chart" ? <>
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <Summary label="Hoy" value={summary.today === null ? "Dato no disponible." : formatWaterTemperature(summary.today)} />
+        <Summary label="Hoy" value={summary.today === null ? "Dato no disponible." : `${formatWaterTemperature(summary.today)} · ${waterComfort(summary.today)}`} />
         <Summary label="Ayer" value={formatWaterTemperature(summary.yesterday)} />
         <Summary label="Diferencia" value={summary.yesterdayDelta === null ? "—" : `${summary.yesterdayDelta > 0 ? "+" : ""}${summary.yesterdayDelta.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} °C`} />
         <Summary label="Tendencia 3 días" value={summary.trend.label} />
@@ -44,7 +44,7 @@ export function WaterTemperaturePanel({ slug, currentTemperature, currentDate, a
       {history?.stale && <p className="mt-2 text-xs font-bold text-amber-700">Dato histórico anterior · {history.message}</p>}
       <p className="mt-3 text-xs leading-5 text-[#647b86]">14 días anteriores a la misma hora local y el dato actual exacto de la ficha. Los huecos no se interpolan. Fuente histórica: Open-Meteo Marine.</p>
     </> : <div className="mt-5"><BeachTemperatureMap beaches={mapBeaches} mapTilerKey={mapTilerKey} selectedId={currentBeachId}/><p className="mt-3 text-xs leading-5 text-[#647b86]">Temperatura actual del mismo snapshot que la ficha. Toca un marcador para consultar la playa.</p></div>}
-    <p className="mt-5 border-t border-[#e4ebe8] pt-4 text-xs leading-5 text-[#647b86]">Referencia orientativa de confort: menos de 18 °C, fría; de 18 a 22,9 °C, agradable; desde 23 °C, muy agradable. No indica calidad sanitaria ni seguridad para el baño.</p>
+    <p className="mt-5 border-t border-[#e4ebe8] pt-4 text-xs leading-5 text-[#647b86]">Menos de 21 °C: fría · de 21 a 23,9 °C: agradable · desde 24 °C: muy agradable. Confort térmico orientativo. No representa calidad sanitaria ni seguridad para el baño.</p>
   </section>;
 }
 

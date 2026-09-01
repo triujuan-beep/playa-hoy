@@ -4,10 +4,10 @@ import { madridDateAndHour, shiftDate, summarizeWaterTemperature, waterComfort, 
 import { rankMapBeaches, toMapBeaches } from "../src/lib/beach-map.ts";
 
 test("clasifica el confort en los límites aprobados", () => {
-  assert.equal(waterComfort(17.9), "Fría");
-  assert.equal(waterComfort(18), "Agradable");
-  assert.equal(waterComfort(22.9), "Agradable");
-  assert.equal(waterComfort(23), "Muy agradable");
+  assert.equal(waterComfort(20.9), "Fría");
+  assert.equal(waterComfort(21), "Agradable");
+  assert.equal(waterComfort(23.9), "Agradable");
+  assert.equal(waterComfort(24), "Muy agradable");
 });
 
 test("calcula tendencia con umbral inclusivo de 0,5 °C", () => {

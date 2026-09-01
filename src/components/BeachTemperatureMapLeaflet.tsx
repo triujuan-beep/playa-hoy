@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { RankedMapBeach } from "@/lib/beach-map";
-import { waterComfort } from "@/lib/water-temperature";
+import { WATER_COMFORT, waterComfort } from "@/lib/water-temperature";
 
-const color = (temperature?: number) => temperature === undefined ? "#647b86" : temperature < 18 ? "#397fa7" : temperature < 23 ? "#078679" : "#df7c3c";
+const color = (temperature?: number) => temperature === undefined ? "#647b86" : temperature < WATER_COMFORT.cold ? "#397fa7" : temperature < WATER_COMFORT.veryPleasant ? "#078679" : "#df7c3c";
 const label = (temperature?: number) => temperature === undefined ? "—" : `${temperature.toLocaleString("es-ES", { maximumFractionDigits: 1 })}°`;
 
 export function BeachTemperatureMapLeaflet({ beaches, mapTilerKey, selectedId, onSelect, className }: { beaches: RankedMapBeach[]; mapTilerKey: string; selectedId?: string; onSelect?: (id: string) => void; className?: string }) {

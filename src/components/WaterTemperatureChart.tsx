@@ -2,7 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DotItemDotProps } from "recharts";
-import { formatWaterTemperature, type WaterTemperaturePoint } from "@/lib/water-temperature";
+import { formatWaterTemperature, WATER_COMFORT, waterComfort, type WaterTemperaturePoint } from "@/lib/water-temperature";
 
 const dayLabel = (date: string) => new Intl.DateTimeFormat("es-ES", { day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`));
 
@@ -18,9 +18,9 @@ export function WaterTemperatureChart({ points }: { points: WaterTemperaturePoin
         <CartesianGrid stroke="#e4ebe8" strokeDasharray="3 4" vertical={false}/>
         <XAxis dataKey="label" tick={{ fill: "#647b86", fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd"/>
         <YAxis domain={[minimum, maximum]} tick={{ fill: "#647b86", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}°`}/>
-        <ReferenceLine y={18} stroke="#6aa7c7" strokeDasharray="5 4" label={{ value: "18°", fill: "#647b86", fontSize: 10, position: "insideTopLeft" }}/>
-        <ReferenceLine y={23} stroke="#e0a24b" strokeDasharray="5 4" label={{ value: "23°", fill: "#647b86", fontSize: 10, position: "insideTopLeft" }}/>
-        <Tooltip cursor={{ stroke: "#078679", strokeDasharray: "3 3" }} formatter={(value) => [formatWaterTemperature(typeof value === "number" ? value : null), "Agua"]} labelFormatter={(label) => String(label)}/>
+        <ReferenceLine y={WATER_COMFORT.cold} stroke="#6aa7c7" strokeDasharray="5 4" label={{ value: `${WATER_COMFORT.cold}°`, fill: "#647b86", fontSize: 10, position: "insideTopLeft" }}/>
+        <ReferenceLine y={WATER_COMFORT.veryPleasant} stroke="#e0a24b" strokeDasharray="5 4" label={{ value: `${WATER_COMFORT.veryPleasant}°`, fill: "#647b86", fontSize: 10, position: "insideTopLeft" }}/>
+        <Tooltip cursor={{ stroke: "#078679", strokeDasharray: "3 3" }} formatter={(value) => { const temperature = typeof value === "number" ? value : null; return [`${formatWaterTemperature(temperature)} · ${waterComfort(temperature)}`, "Agua"]; }} labelFormatter={(label) => String(label)}/>
         <Area type="monotone" dataKey="value" stroke="#078679" strokeWidth={3} fill="url(#waterTemperatureFill)" connectNulls={false} dot={(props: DotItemDotProps) => <circle cx={props.cx} cy={props.cy} r={props.index === data.length - 1 ? 6 : 3} fill={props.index === data.length - 1 ? "#075b78" : "#fff"} stroke="#078679" strokeWidth={props.index === data.length - 1 ? 3 : 2}/>} activeDot={{ r: 7 }}/>
       </AreaChart>
     </ResponsiveContainer>
