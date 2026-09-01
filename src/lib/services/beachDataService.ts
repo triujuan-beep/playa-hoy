@@ -68,7 +68,7 @@ async function loadRealData(previous?:Beach[]):Promise<Beach[]> {
  });
 }
 
-async function createSnapshot(previous?:BeachDataSnapshot):Promise<BeachDataSnapshot>{const beaches=await loadRealData(previous?.beaches);const referenceTime=new Date().toISOString();return{beaches,referenceTime,refreshedAt:referenceTime}}
+async function createSnapshot(previous?:BeachDataSnapshot):Promise<BeachDataSnapshot>{if(process.env.NEXT_PHASE==="phase-production-build")throw new Error("No cached beach snapshot is available during production build; aborting without calling providers.");const beaches=await loadRealData(previous?.beaches);const referenceTime=new Date().toISOString();return{beaches,referenceTime,refreshedAt:referenceTime}}
 const getSeedSnapshot=unstable_cache(async()=>createSnapshot(),["playa-hoy-beach-snapshot-seed-v21-63"],{revalidate:false,tags:["playa-hoy-beach-snapshot-seed"]});
 function isSnapshot(value:unknown):value is BeachDataSnapshot{if(!value||typeof value!=="object")return false;const snapshot=value as BeachDataSnapshot;return typeof snapshot.referenceTime==="string"&&typeof snapshot.refreshedAt==="string"&&Array.isArray(snapshot.beaches)&&snapshot.beaches.length===catalog.length&&snapshot.beaches.every((beach,index)=>beach.id===catalog[index].id)}
 function isSnapshotManifest(value:unknown):value is BeachDataSnapshotManifest{if(!value||typeof value!=="object")return false;const manifest=value as BeachDataSnapshotManifest;return manifest.version===1&&typeof manifest.referenceTime==="string"&&typeof manifest.refreshedAt==="string"&&Array.isArray(manifest.chunkKeys)&&manifest.chunkKeys.length>0&&manifest.chunkKeys.every(key=>typeof key==="string")}
@@ -81,7 +81,7 @@ async function refreshSnapshot(previous:BeachDataSnapshot){if(refreshInFlight)re
 export const getAllBeachesSnapshot=cache(async():Promise<BeachDataSnapshot>=>{
  if(process.env.USE_MOCK_DATA?.toLowerCase()!=="false"){const referenceTime=new Date().toISOString();return{beaches:catalog.map(asMock),referenceTime,refreshedAt:referenceTime}}
  let snapshot=await readRuntimeSnapshot();
- if(process.env.NEXT_PHASE==="phase-production-build")return requireSharedSnapshotForBuild(snapshot);
+ if(process.env.NEXT_PHASE==="phase-production-build"){snapshot=snapshot??await getSeedSnapshot();assertWeatherCoverage(snapshot,WEATHER_MUNICIPALITIES);return requireSharedSnapshotForBuild(snapshot)}
  if(!snapshot){snapshot=await getSeedSnapshot();await persistRuntimeSnapshot(snapshot)}
  return snapshot;
 });
