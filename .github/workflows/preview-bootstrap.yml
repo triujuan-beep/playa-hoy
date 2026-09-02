@@ -49,6 +49,7 @@ jobs:
 
       - name: Validate code before contacting providers
         run: |
+          pnpm exec next typegen
           pnpm test
           pnpm typecheck
           pnpm lint
