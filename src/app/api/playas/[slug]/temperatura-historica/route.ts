@@ -1,16 +1,25 @@
 import { NextResponse } from "next/server";
-import { getAllBeachesSnapshot } from "@/lib/services/beachDataService";
+import { getAllBeachesSnapshot, type BeachDataSnapshot } from "@/lib/services/beachDataService";
 import { getWaterTemperatureHistory } from "@/lib/providers/waterHistoryProvider";
 import { madridDateAndHour } from "@/lib/water-temperature";
+import { beaches as catalog } from "@/lib/mock-beaches";
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const snapshot = await getAllBeachesSnapshot();
-  const beach = snapshot.beaches.find((item) => item.slug === slug || item.id === slug || item.legacySlugs?.includes(slug));
+  let snapshot: BeachDataSnapshot | undefined;
+  try {
+    snapshot = await getAllBeachesSnapshot();
+  } catch (error) {
+    console.warn("[waterHistory] Shared snapshot unavailable; using catalog coordinates", error instanceof Error ? error.message : "error desconocido");
+  }
+  const snapshotBeach = snapshot?.beaches.find((item) => item.slug === slug || item.id === slug || item.legacySlugs?.includes(slug));
+  const beach = snapshotBeach ?? catalog.find((item) => item.slug === slug || item.id === slug || item.legacySlugs?.includes(slug));
   if (!beach) return NextResponse.json({ error: "Playa no encontrada" }, { status: 404 });
+  const referenceTime = snapshot?.referenceTime ?? new Date().toISOString();
+  const seaValidFor = snapshotBeach?.sources?.sea?.validFor;
   const requestedAnchor = new URL(request.url).searchParams.get("anchor");
   const candidateAnchor = requestedAnchor && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{3})?Z?)?$/.test(requestedAnchor) ? requestedAnchor : undefined;
-  const snapshotDate = madridDateAndHour(beach.sources?.sea?.validFor ?? snapshot.referenceTime).date;
+  const snapshotDate = madridDateAndHour(seaValidFor ?? referenceTime).date;
   const candidateDate = candidateAnchor ? madridDateAndHour(candidateAnchor).date : undefined;
   const dayDistance = candidateDate ? Math.abs(Date.parse(`${candidateDate}T00:00:00Z`) - Date.parse(`${snapshotDate}T00:00:00Z`)) / 86_400_000 : Infinity;
   const validAnchor = dayDistance <= 1 ? candidateAnchor : undefined;
@@ -19,8 +28,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       id: beach.id,
       latitude: beach.latitude,
       longitude: beach.longitude,
-      referenceTime: snapshot.referenceTime,
-      validFor: validAnchor ?? beach.sources?.sea?.validFor,
+      referenceTime,
+      validFor: validAnchor ?? seaValidFor,
     });
     return NextResponse.json(result, { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } });
   } catch (error) {

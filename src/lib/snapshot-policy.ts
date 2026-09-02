@@ -13,15 +13,21 @@ export function requireSharedSnapshotForBuild<T extends SharedSnapshot>(snapshot
   return snapshot;
 }
 
+export function weatherCoverageRejection(
+  candidate: SharedSnapshot,
+  expectedMunicipalities: readonly string[],
+): string | undefined {
+  const candidateCoverage = weatherCoverage(candidate);
+  const missing = expectedMunicipalities.filter((municipality) => !candidateCoverage.has(municipality));
+  return missing.length
+    ? `Weather coverage would regress; snapshot not published. Missing: ${missing.join(", ")}`
+    : undefined;
+}
+
 export function assertWeatherCoverage(
   candidate: SharedSnapshot,
   expectedMunicipalities: readonly string[],
-  previous?: SharedSnapshot,
 ) {
-  const candidateCoverage = weatherCoverage(candidate);
-  const requiredCoverage = previous ? weatherCoverage(previous) : new Set(expectedMunicipalities);
-  const missing = [...requiredCoverage].filter((municipality) => !candidateCoverage.has(municipality));
-  if (missing.length) {
-    throw new Error(`Weather coverage would regress; snapshot not published. Missing: ${missing.join(", ")}`);
-  }
+  const rejection = weatherCoverageRejection(candidate, expectedMunicipalities);
+  if (rejection) throw new Error(rejection);
 }

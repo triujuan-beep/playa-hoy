@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { madridDateAndHour, shiftDate, summarizeWaterTemperature, waterComfort, waterHistoryAvailability, waterHistoryCacheState, waterTrend } from "../src/lib/water-temperature.ts";
 import { rankMapBeaches, toMapBeaches } from "../src/lib/beach-map.ts";
-import { assertWeatherCoverage, requireSharedSnapshotForBuild } from "../src/lib/snapshot-policy.ts";
+import { assertWeatherCoverage, requireSharedSnapshotForBuild, weatherCoverageRejection } from "../src/lib/snapshot-policy.ts";
 
 const municipalities = Array.from({ length: 15 }, (_, index) => `Municipio ${index + 1}`);
 const weatherSnapshot = (covered = municipalities, refreshedAt = "2026-09-01T12:00:00.000Z") => ({
@@ -32,9 +32,14 @@ test("el build reutiliza también un snapshot vencido", () => {
 
 test("una respuesta AEMET parcial no puede degradar la cobertura anterior", () => {
   assert.throws(
-    () => assertWeatherCoverage(weatherSnapshot(municipalities.slice(0, 14)), municipalities, weatherSnapshot()),
+    () => assertWeatherCoverage(weatherSnapshot(municipalities.slice(0, 14)), municipalities),
     /Weather coverage would regress/,
   );
+});
+
+test("runtime puede rechazar un candidato parcial sin lanzar una excepción", () => {
+  assert.match(weatherCoverageRejection(weatherSnapshot(municipalities.slice(0, 14)), municipalities) ?? "", /Municipio 15/);
+  assert.equal(weatherCoverageRejection(weatherSnapshot(), municipalities), undefined);
 });
 
 test("sin snapshot previo se exige cobertura de los 15 municipios", () => {
