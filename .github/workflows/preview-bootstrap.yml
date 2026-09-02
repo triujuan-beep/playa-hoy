@@ -1,0 +1,109 @@
+name: Preview Bootstrap Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      targetEnvironment:
+        description: Environment that receives the ephemeral seed
+        required: true
+        type: choice
+        options:
+          - preview
+        default: preview
+
+concurrency:
+  group: preview-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap-and-deploy:
+    if: inputs.targetEnvironment == 'preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: team_GcdvcY3LiNeuCuHzHXBHn9WH
+      VERCEL_PROJECT_ID: prj_RWUJkPtyREVihsWwSPUgf54lckzV
+      VERCEL_ENV: preview
+      VERCEL_GIT_COMMIT_SHA: ${{ github.sha }}
+      PLAYA_HOY_PREVIEW_SEED_ID: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Reject every non-Preview target
+        run: test "${{ inputs.targetEnvironment }}" = "preview"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate code before contacting providers
+        run: |
+          pnpm test
+          pnpm typecheck
+          pnpm lint
+
+      - name: Generate ephemeral 15/15 seed
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: node --experimental-strip-types scripts/generate-preview-bootstrap.mjs src/data/preview-bootstrap-seed.json
+
+      - name: Validate ephemeral seed is not staged
+        run: |
+          test -n "$(git diff -- src/data/preview-bootstrap-seed.json)"
+          test -z "$(git diff --cached -- src/data/preview-bootstrap-seed.json)"
+
+      - name: Pull Preview configuration
+        run: pnpm dlx vercel@latest pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build precompiled Preview without provider calls
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm dlx vercel@latest build --token="${{ secrets.VERCEL_TOKEN }}" 2>&1 | tee "$RUNNER_TEMP/vercel-build.log"
+          if grep -E '\[AEMET\]|\[seaProvider\]' "$RUNNER_TEMP/vercel-build.log"; then
+            echo "Provider call detected during vercel build; aborting." >&2
+            exit 1
+          fi
+
+      - name: Deploy prebuilt artifact to Preview
+        id: deploy
+        shell: bash
+        run: |
+          url="$(pnpm dlx vercel@latest deploy --prebuilt --yes --env "PLAYA_HOY_PREVIEW_SEED_ID=$GITHUB_SHA" --token="${{ secrets.VERCEL_TOKEN }}")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview URL: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Initialize Runtime Cache once and smoke-test
+        shell: bash
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          curl --fail --show-error --silent --retry 8 --retry-delay 5 "$PREVIEW_URL/playa/malaga-la-malagueta" > /dev/null
+          curl --fail --show-error --silent "$PREVIEW_URL/" > /dev/null
+          curl --fail --show-error --silent "$PREVIEW_URL/mapa" > /dev/null
+          curl --fail --show-error --silent "$PREVIEW_URL/playa/velez-malaga-torre-del-mar" > /dev/null
+          curl --fail --show-error --silent "$PREVIEW_URL/api/playas/velez-malaga-torre-del-mar/temperatura-historica" > "$RUNNER_TEMP/history.json"
+          curl --fail --show-error --silent "$PREVIEW_URL/api/playas/velez-malaga-torre-del-mar/temperatura-historica" > "$RUNNER_TEMP/history-second-access.json"
+          node -e "const h=require(process.argv[1]);if(!Array.isArray(h.points)||h.points.length!==14||h.points.at(-2)?.value==null)process.exit(1)" "$RUNNER_TEMP/history.json"
+
+      - name: Upload bootstrap diagnostics only
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-bootstrap-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/vercel-build.log
+            ${{ runner.temp }}/history.json
+            ${{ runner.temp }}/history-second-access.json
+          if-no-files-found: error
+          retention-days: 7
