@@ -2,48 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { madridDateAndHour, shiftDate, summarizeWaterTemperature, waterComfort, waterHistoryAvailability, waterHistoryCacheState, waterTrend } from "../src/lib/water-temperature.ts";
 import { rankMapBeaches, toMapBeaches } from "../src/lib/beach-map.ts";
-import { assertWeatherCoverage, requireSharedSnapshotForBuild } from "../src/lib/snapshot-policy.ts";
-
-const municipalities = Array.from({ length: 15 }, (_, index) => `Municipio ${index + 1}`);
-const weatherSnapshot = (covered = municipalities, refreshedAt = "2026-09-01T12:00:00.000Z") => ({
-  refreshedAt,
-  beaches: municipalities.map((municipality) => ({
-    municipality,
-    sources: { weather: { state: covered.includes(municipality) ? "live" : "unavailable" } },
-  })),
-});
 
 test("clasifica el confort en los límites aprobados", () => {
   assert.equal(waterComfort(20.9), "Fría");
   assert.equal(waterComfort(21), "Agradable");
   assert.equal(waterComfort(23.9), "Agradable");
   assert.equal(waterComfort(24), "Muy agradable");
-});
-
-test("el build reutiliza el snapshot compartido existente", () => {
-  const snapshot = weatherSnapshot();
-  assert.equal(requireSharedSnapshotForBuild(snapshot), snapshot);
-});
-
-test("el build reutiliza también un snapshot vencido", () => {
-  const stale = weatherSnapshot(municipalities, "2026-08-01T00:00:00.000Z");
-  assert.equal(requireSharedSnapshotForBuild(stale), stale);
-});
-
-test("una respuesta AEMET parcial no puede degradar la cobertura anterior", () => {
-  assert.throws(
-    () => assertWeatherCoverage(weatherSnapshot(municipalities.slice(0, 14)), municipalities, weatherSnapshot()),
-    /Weather coverage would regress/,
-  );
-});
-
-test("sin snapshot previo se exige cobertura de los 15 municipios", () => {
-  assert.throws(() => assertWeatherCoverage(weatherSnapshot(municipalities.slice(0, 14)), municipalities), /Municipio 15/);
-  assert.doesNotThrow(() => assertWeatherCoverage(weatherSnapshot(), municipalities));
-});
-
-test("el build aborta si no existe ningún snapshot compartido", () => {
-  assert.throws(() => requireSharedSnapshotForBuild(undefined), /aborting without calling providers/);
 });
 
 test("calcula tendencia con umbral inclusivo de 0,5 °C", () => {

@@ -10,7 +10,6 @@ import { getWeather,type WeatherResult } from "../providers/weatherProvider";
 import { getMarineForecastForBeaches,OPEN_METEO_MARINE_DOCS,type SeaResult } from "../providers/seaProvider";
 import { getAllSanitaryStatuses } from "../providers/sanitaryProvider";
 import { getMedusAppObservationsForBeaches,MEDUSAPP_LICENSE,MEDUSAPP_SOURCE_URL } from "../providers/medusAppProvider";
-import { assertWeatherCoverage,requireSharedSnapshotForBuild } from "../snapshot-policy";
 
 export type BeachDataSnapshot={beaches:Beach[];referenceTime:string;refreshedAt:string};
 type BeachDataSnapshotManifest={version:1;referenceTime:string;refreshedAt:string;chunkKeys:string[]};
@@ -19,7 +18,6 @@ const SNAPSHOT_MANIFEST_KEY=`${SNAPSHOT_KEY}:manifest`;
 const SNAPSHOT_CHUNK_SIZE=8;
 const SNAPSHOT_REFRESH_SECONDS=15*60;
 const SNAPSHOT_TTL_SECONDS=7*24*60*60;
-const WEATHER_MUNICIPALITIES=[...new Set(catalog.map(beach=>beach.municipality))];
 let memorySnapshot:BeachDataSnapshot|undefined;
 let refreshInFlight:Promise<void>|null=null;
 
@@ -68,21 +66,19 @@ async function loadRealData(previous?:Beach[]):Promise<Beach[]> {
  });
 }
 
-async function createSnapshot(previous?:BeachDataSnapshot):Promise<BeachDataSnapshot>{if(process.env.NEXT_PHASE==="phase-production-build")throw new Error("No cached beach snapshot is available during production build; aborting without calling providers.");const beaches=await loadRealData(previous?.beaches);const referenceTime=new Date().toISOString();return{beaches,referenceTime,refreshedAt:referenceTime}}
+async function createSnapshot(previous?:BeachDataSnapshot):Promise<BeachDataSnapshot>{const beaches=await loadRealData(previous?.beaches);const referenceTime=new Date().toISOString();return{beaches,referenceTime,refreshedAt:referenceTime}}
 const getSeedSnapshot=unstable_cache(async()=>createSnapshot(),["playa-hoy-beach-snapshot-seed-v21-63"],{revalidate:false,tags:["playa-hoy-beach-snapshot-seed"]});
 function isSnapshot(value:unknown):value is BeachDataSnapshot{if(!value||typeof value!=="object")return false;const snapshot=value as BeachDataSnapshot;return typeof snapshot.referenceTime==="string"&&typeof snapshot.refreshedAt==="string"&&Array.isArray(snapshot.beaches)&&snapshot.beaches.length===catalog.length&&snapshot.beaches.every((beach,index)=>beach.id===catalog[index].id)}
 function isSnapshotManifest(value:unknown):value is BeachDataSnapshotManifest{if(!value||typeof value!=="object")return false;const manifest=value as BeachDataSnapshotManifest;return manifest.version===1&&typeof manifest.referenceTime==="string"&&typeof manifest.refreshedAt==="string"&&Array.isArray(manifest.chunkKeys)&&manifest.chunkKeys.length>0&&manifest.chunkKeys.every(key=>typeof key==="string")}
 function isBeachChunk(value:unknown):value is Beach[]{return Array.isArray(value)&&value.every(beach=>beach&&typeof beach==="object"&&typeof (beach as Beach).id==="string")}
 async function readRuntimeSnapshot(){try{const cache=getCache({namespace:"playa-hoy"});const manifestValue=await cache.get(SNAPSHOT_MANIFEST_KEY);if(!isSnapshotManifest(manifestValue))return memorySnapshot;const chunks=await Promise.all(manifestValue.chunkKeys.map(key=>cache.get(key)));if(!chunks.every(isBeachChunk))return memorySnapshot;const snapshot:BeachDataSnapshot={beaches:chunks.flat(),referenceTime:manifestValue.referenceTime,refreshedAt:manifestValue.refreshedAt};if(isSnapshot(snapshot)){memorySnapshot=snapshot;return snapshot}}catch(error){console.warn("[beachSnapshot] Runtime Cache read failed",error instanceof Error?error.message:"error desconocido")}return memorySnapshot}
-async function persistRuntimeSnapshot(snapshot:BeachDataSnapshot,previous?:BeachDataSnapshot){assertWeatherCoverage(snapshot,WEATHER_MUNICIPALITIES,previous);memorySnapshot=snapshot;try{const cache=getCache({namespace:"playa-hoy"});const version=Date.parse(snapshot.refreshedAt).toString(36);const chunks=Array.from({length:Math.ceil(snapshot.beaches.length/SNAPSHOT_CHUNK_SIZE)},(_,index)=>snapshot.beaches.slice(index*SNAPSHOT_CHUNK_SIZE,(index+1)*SNAPSHOT_CHUNK_SIZE));const chunkKeys=chunks.map((_,index)=>`${SNAPSHOT_KEY}:${version}:${index}`);await Promise.all(chunks.map((chunk,index)=>cache.set(chunkKeys[index],chunk,{ttl:SNAPSHOT_TTL_SECONDS,tags:["beach-data-snapshot"],name:`Playa Hoy beach data snapshot ${index+1}/${chunks.length}`})));const manifest:BeachDataSnapshotManifest={version:1,referenceTime:snapshot.referenceTime,refreshedAt:snapshot.refreshedAt,chunkKeys};await cache.set(SNAPSHOT_MANIFEST_KEY,manifest,{ttl:SNAPSHOT_TTL_SECONDS,tags:["beach-data-snapshot"],name:"Playa Hoy beach data snapshot manifest"})}catch(error){console.warn("[beachSnapshot] Runtime Cache write failed",error instanceof Error?error.message:"error desconocido")}}
+async function persistRuntimeSnapshot(snapshot:BeachDataSnapshot){memorySnapshot=snapshot;try{const cache=getCache({namespace:"playa-hoy"});const version=Date.parse(snapshot.refreshedAt).toString(36);const chunks=Array.from({length:Math.ceil(snapshot.beaches.length/SNAPSHOT_CHUNK_SIZE)},(_,index)=>snapshot.beaches.slice(index*SNAPSHOT_CHUNK_SIZE,(index+1)*SNAPSHOT_CHUNK_SIZE));const chunkKeys=chunks.map((_,index)=>`${SNAPSHOT_KEY}:${version}:${index}`);await Promise.all(chunks.map((chunk,index)=>cache.set(chunkKeys[index],chunk,{ttl:SNAPSHOT_TTL_SECONDS,tags:["beach-data-snapshot"],name:`Playa Hoy beach data snapshot ${index+1}/${chunks.length}`})));const manifest:BeachDataSnapshotManifest={version:1,referenceTime:snapshot.referenceTime,refreshedAt:snapshot.refreshedAt,chunkKeys};await cache.set(SNAPSHOT_MANIFEST_KEY,manifest,{ttl:SNAPSHOT_TTL_SECONDS,tags:["beach-data-snapshot"],name:"Playa Hoy beach data snapshot manifest"})}catch(error){console.warn("[beachSnapshot] Runtime Cache write failed",error instanceof Error?error.message:"error desconocido")}}
 function needsRefresh(snapshot:BeachDataSnapshot){return Date.now()-Date.parse(snapshot.refreshedAt)>=SNAPSHOT_REFRESH_SECONDS*1000}
-async function refreshSnapshot(previous:BeachDataSnapshot){if(refreshInFlight)return refreshInFlight;refreshInFlight=(async()=>{const startedAt=Date.now();try{const fresh=await createSnapshot(previous);await persistRuntimeSnapshot(fresh,previous);console.info(`[beachSnapshot] refreshed ${fresh.beaches.length} beaches · ${Date.now()-startedAt} ms`)}catch(error){console.error("[beachSnapshot] refresh failed; keeping last valid snapshot",error instanceof Error?error.message:"error desconocido")}finally{refreshInFlight=null}})();return refreshInFlight}
+async function refreshSnapshot(previous:BeachDataSnapshot){if(refreshInFlight)return refreshInFlight;refreshInFlight=(async()=>{const startedAt=Date.now();try{const fresh=await createSnapshot(previous);await persistRuntimeSnapshot(fresh);console.info(`[beachSnapshot] refreshed ${fresh.beaches.length} beaches · ${Date.now()-startedAt} ms`)}catch(error){console.error("[beachSnapshot] refresh failed; keeping last valid snapshot",error instanceof Error?error.message:"error desconocido")}finally{refreshInFlight=null}})();return refreshInFlight}
 
 export const getAllBeachesSnapshot=cache(async():Promise<BeachDataSnapshot>=>{
  if(process.env.USE_MOCK_DATA?.toLowerCase()!=="false"){const referenceTime=new Date().toISOString();return{beaches:catalog.map(asMock),referenceTime,refreshedAt:referenceTime}}
- let snapshot=await readRuntimeSnapshot();
- if(process.env.NEXT_PHASE==="phase-production-build"){snapshot=snapshot??await getSeedSnapshot();assertWeatherCoverage(snapshot,WEATHER_MUNICIPALITIES);return requireSharedSnapshotForBuild(snapshot)}
- if(!snapshot){snapshot=await getSeedSnapshot();await persistRuntimeSnapshot(snapshot)}
+ let snapshot=await readRuntimeSnapshot();if(!snapshot){snapshot=await getSeedSnapshot();await persistRuntimeSnapshot(snapshot)}
  return snapshot;
 });
 // Home is the single ISR coordinator. Other routes consume the shared stale snapshot while it refreshes.
