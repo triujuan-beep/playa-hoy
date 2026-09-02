@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "pnpm test:medusapp && pnpm test:v2 && pnpm test:ranking && pnpm test:water-map",
+    "test": "pnpm test:medusapp && pnpm test:v2 && pnpm test:ranking && pnpm test:water-map && pnpm test:preview-bootstrap",
     "test:medusapp": "node --experimental-strip-types --test --test-isolation=none research/medusapp/product-core.test.mjs",
     "test:v2": "node --experimental-strip-types --test --test-isolation=none tests/costa-del-sol-v2.test.mjs",
     "test:ranking": "node --experimental-strip-types --test --test-isolation=none tests/ranking-ux-v2.test.mjs",
-    "test:water-map": "node --experimental-strip-types --test --test-isolation=none tests/water-temperature-map.test.mjs"
+    "test:water-map": "node --experimental-strip-types --test --test-isolation=none tests/water-temperature-map.test.mjs",
+    "test:preview-bootstrap": "node --experimental-strip-types --test --test-isolation=none tests/preview-bootstrap.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
