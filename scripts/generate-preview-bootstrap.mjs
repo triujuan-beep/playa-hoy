@@ -9,6 +9,8 @@ const MARINE_API = "https://marine-api.open-meteo.com/v1/marine";
 const MARINE_SOURCE = "https://open-meteo.com/en/docs/marine-weather-api";
 const PROJECT_ID = "prj_RWUJkPtyREVihsWwSPUgf54lckzV";
 const TIMEZONE = "Europe/Madrid";
+const AEMET_REQUEST_INTERVAL_MS = 10_000;
+const AEMET_RETRY_BACKOFF_MS = [60_000, 120_000, 240_000];
 const MARINE_FIELDS = ["sea_surface_temperature", "wave_height", "wave_direction", "wave_period", "swell_wave_height", "swell_wave_direction", "swell_wave_period", "ocean_current_velocity", "ocean_current_direction"];
 const output = process.argv[2];
 const commitSha = process.env.GITHUB_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA;
@@ -23,6 +25,20 @@ const municipalities = [...new Set(catalog.map((beach) => beach.municipality))];
 if (municipalities.length !== 15) throw new Error(`Expected 15 municipalities; found ${municipalities.length}.`);
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+let nextAemetRequestAt = 0;
+async function paceAemetRequest() {
+  const delay = Math.max(0, nextAemetRequestAt - Date.now());
+  if (delay) await wait(delay);
+  nextAemetRequestAt = Date.now() + AEMET_REQUEST_INTERVAL_MS;
+}
+function retryAfterMilliseconds(value) {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(value);
+  return Number.isFinite(date) ? Math.max(0, date - Date.now()) : undefined;
+}
+const jitterMilliseconds = () => 1_000 + Math.floor(Math.random() * 2_001);
 const valueAt = (values, index) => typeof values?.[index] === "number" && Number.isFinite(values[index]) ? values[index] : undefined;
 const first = (value) => Array.isArray(value) ? value[0] : value;
 const number = (value) => { const parsed = Number(first(value)); return value !== undefined && value !== null && value !== "" && Number.isFinite(parsed) ? parsed : undefined; };
@@ -55,6 +71,32 @@ async function checkedFetch(url, provider) {
   throw lastError instanceof Error ? lastError : new Error(`${provider} unavailable.`);
 }
 
+async function checkedAemetFetch(url, provider) {
+  let lastError;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await paceAemetRequest();
+    try {
+      const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(15_000) });
+      if (response.ok || response.status < 500 && response.status !== 429) return response;
+      lastError = new Error(`${provider} HTTP ${response.status}`);
+      if (attempt === 3) break;
+      const retryAfter = response.status === 429 ? retryAfterMilliseconds(response.headers.get("retry-after")) : undefined;
+      const baseDelay = retryAfter ?? (response.status === 429 ? AEMET_RETRY_BACKOFF_MS[attempt] : 1_000 * 2 ** attempt);
+      const delay = baseDelay + jitterMilliseconds();
+      console.warn(`[preview-bootstrap] ${provider} HTTP ${response.status}; retry ${attempt + 1}/3 in ${Math.ceil(delay / 1000)} s${retryAfter !== undefined ? " (Retry-After)" : ""}`);
+      await wait(delay);
+      continue;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) break;
+      const delay = 1_000 * 2 ** attempt + jitterMilliseconds();
+      console.warn(`[preview-bootstrap] ${provider} network error; retry ${attempt + 1}/3 in ${Math.ceil(delay / 1000)} s`);
+      await wait(delay);
+    }
+  }
+  throw lastError instanceof Error ? new Error(`${lastError.message}; bootstrap aborted after 4 attempts.`) : new Error(`${provider} unavailable after 4 attempts.`);
+}
+
 function parseWeather(payload) {
   const root = payload?.[0];
   const days = root?.prediccion?.dia ?? [];
@@ -81,11 +123,11 @@ function parseWeather(payload) {
 async function fetchWeather(municipality) {
   const code = AEMET_MUNICIPALITY_CODES[municipality];
   if (!code) throw new Error(`No AEMET code for ${municipality}.`);
-  const metadataResponse = await checkedFetch(`${AEMET_API}/prediccion/especifica/municipio/horaria/${code}?api_key=${encodeURIComponent(apiKey)}`, `AEMET ${municipality} metadata`);
+  const metadataResponse = await checkedAemetFetch(`${AEMET_API}/prediccion/especifica/municipio/horaria/${code}?api_key=${encodeURIComponent(apiKey)}`, `AEMET ${municipality} metadata`);
   if (!metadataResponse.ok) throw new Error(`AEMET ${municipality} metadata HTTP ${metadataResponse.status}.`);
   const metadata = await metadataResponse.json();
   if (!metadata.datos) throw new Error(`AEMET ${municipality} returned no data URL.`);
-  const dataResponse = await checkedFetch(metadata.datos, `AEMET ${municipality} data`);
+  const dataResponse = await checkedAemetFetch(metadata.datos, `AEMET ${municipality} data`);
   if (!dataResponse.ok) throw new Error(`AEMET ${municipality} data HTTP ${dataResponse.status}.`);
   return parseWeather(await dataResponse.json());
 }
@@ -114,7 +156,6 @@ for (const municipality of municipalities) {
   const result = await fetchWeather(municipality);
   weatherByMunicipality.set(municipality, result);
   console.log(`[preview-bootstrap] AEMET ${municipality}: OK`);
-  await wait(1_250);
 }
 if (weatherByMunicipality.size !== 15) throw new Error(`AEMET coverage is ${weatherByMunicipality.size}/15.`);
 
