@@ -1,0 +1,175 @@
+{
+  "executionDate": "2026-09-06",
+  "generatedAt": "2026-09-06T11:04:41.175Z",
+  "detectorVersion": "v1.2-frozen",
+  "detectorHash": "E5B251686A394A936C5440C20FC6095F73899E5C0A1D6022DB18A1EC6D43204F",
+  "copernicusSourceDate": "2026-09-05",
+  "sourceAge": 1,
+  "sourceFreshness": "fresh",
+  "lastValidSnapshot": "2026-09-05",
+  "points": [
+    {
+      "point": "Estepona",
+      "region": "western",
+      "latitude": 36.420739,
+      "longitude": -5.148896,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.14,
+        "copernicusSstC": 20.64,
+        "copernicusCooling48hC": -0.85,
+        "copernicusCooling72hC": -0.41
+      }
+    },
+    {
+      "point": "Marbella",
+      "region": "western",
+      "latitude": 36.506503,
+      "longitude": -4.886251,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.28,
+        "copernicusSstC": 21.47,
+        "copernicusCooling48hC": -0.69,
+        "copernicusCooling72hC": -0.94
+      }
+    },
+    {
+      "point": "Fuengirola",
+      "region": "central-west",
+      "latitude": 36.532737,
+      "longitude": -4.623467,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.52,
+        "copernicusSstC": 23.47,
+        "copernicusCooling48hC": -1.33,
+        "copernicusCooling72hC": -1.37
+      }
+    },
+    {
+      "point": "Malaga",
+      "region": "Malaga Bay",
+      "latitude": 36.715699,
+      "longitude": -4.411388,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 24.04,
+        "copernicusSstC": 22.41,
+        "copernicusCooling48hC": -1.11,
+        "copernicusCooling72hC": -2.13
+      }
+    },
+    {
+      "point": "Benajarafe",
+      "region": "Axarquia-west",
+      "latitude": 36.715436,
+      "longitude": -4.191691,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.81,
+        "copernicusSstC": 22.66,
+        "copernicusCooling48hC": -1.23,
+        "copernicusCooling72hC": -2.32
+      }
+    },
+    {
+      "point": "Torrox",
+      "region": "Axarquia-central",
+      "latitude": 36.728322,
+      "longitude": -3.962194,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.87,
+        "copernicusSstC": 24.23,
+        "copernicusCooling48hC": -3.05,
+        "copernicusCooling72hC": -3.75
+      }
+    },
+    {
+      "point": "Maro",
+      "region": "Axarquia-east",
+      "latitude": 36.753946,
+      "longitude": -3.83464,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.88,
+        "copernicusSstC": 24.71,
+        "copernicusCooling48hC": -2.97,
+        "copernicusCooling72hC": -4.38
+      }
+    },
+    {
+      "point": "La Herradura",
+      "region": "Granada-west",
+      "latitude": 36.733183,
+      "longitude": -3.744979,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.61,
+        "copernicusSstC": 24.66,
+        "copernicusCooling48hC": -3.42,
+        "copernicusCooling72hC": -4.5
+      }
+    },
+    {
+      "point": "Almunecar",
+      "region": "Granada-central",
+      "latitude": 36.730375,
+      "longitude": -3.68666,
+      "confidence": "MEDIUM",
+      "coastalCoolingAlert": false,
+      "upwellingEvidence": "none",
+      "reasons": [
+        "no_coastal_cooling_alert_evidence"
+      ],
+      "signals": {
+        "openMeteoSstC": 23.61,
+        "copernicusSstC": 24.9,
+        "copernicusCooling48hC": -3.18,
+        "copernicusCooling72hC": -4.68
+      }
+    }
+  ],
+  "errors": []
+}
